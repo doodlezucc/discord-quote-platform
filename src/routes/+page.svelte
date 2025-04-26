@@ -3,6 +3,7 @@
 	import Content from '$lib/components/Content.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import type { PageData } from './$types';
+	import Guild from './(components)/Guild.svelte';
 
 	let { data }: { data: PageData } = $props();
 </script>
@@ -18,8 +19,19 @@
 </Header>
 
 <Content>
-	{#each data.guilds as guild (guild.id)}
-		<h2>{guild.name}</h2>
-		<img src="https://cdn.discordapp.com/icons/{guild.id}/{guild.icon}.png" alt="Server Icon" />
-	{/each}
+	<h2>Servers</h2>
+
+	<div class="guilds">
+		{#each data.guilds as guild (guild.id)}
+			<Guild id={guild.id} name={guild.name} iconId={guild.icon} content={null} />
+		{/each}
+	</div>
 </Content>
+
+<style lang="scss">
+	.guilds {
+		display: flex;
+		flex-direction: column;
+		gap: 16px;
+	}
+</style>

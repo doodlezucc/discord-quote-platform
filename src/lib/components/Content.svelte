@@ -11,3 +11,9 @@
 <main class="content-margin">
 	{@render children()}
 </main>
+
+<style lang="scss">
+	main {
+		padding: 48px 0;
+	}
+</style>
