@@ -1,0 +1,73 @@
+@use 'sass:color' as sass;
+
+$centered-shade: 5;
+
+@function var-name-color($color-name, $shade: 0) {
+	@if $shade == 0 {
+		@return --color-#{$color-name};
+	} @else {
+		@return --color-#{$color-name}-#{$centered-shade + $shade};
+	}
+}
+
+@function color($color-name, $shade: 0) {
+	@return var(var-name-color($color-name, $shade));
+}
+
+@mixin define-color($color-name, $value) {
+	#{var-name-color($color-name)}: $value;
+}
+
+@mixin define-hue($color-name, $value) {
+	#{var-name-color($color-name, -2)}: sass.scale($value, $saturation: -30%, $lightness: -30%);
+	#{var-name-color($color-name, -1)}: sass.scale($value, $saturation: -18%, $lightness: -18%);
+
+	#{var-name-color($color-name)}: $value;
+
+	#{var-name-color($color-name, 1)}: sass.scale($value, $saturation: 18%, $lightness: 18%);
+	#{var-name-color($color-name, 2)}: sass.scale($value, $saturation: 30%, $lightness: 30%);
+}
+
+@mixin define-scheme() {
+	@include define-color('separator', color('shade-2'));
+	@include define-color('quote', color('shade-4'));
+
+	background-color: color('background');
+	color: color('text');
+
+	::selection {
+		background-color: color('selection');
+	}
+}
+
+@mixin define-scheme-dark() {
+	color-scheme: dark;
+
+	@include define-hue('primary', hsl(355, 100%, 65%));
+	@include define-hue('secondary', hsl(263, 100%, 60%));
+
+	@include define-color('text-dark', #1b1b1b);
+	@include define-color('text-light', #e0e0e0);
+
+	@include define-color('shade-1', #1f1f1f);
+	@include define-color('shade-2', #414141);
+	@include define-color('shade-3', #666666);
+	@include define-color('shade-4', #a0a0a0);
+
+	@include define-color('background', color('text-dark'));
+	@include define-color('text', color('text-light'));
+	@include define-color('on-primary', #ffffff);
+	@include define-color('on-secondary', #ffffff);
+
+	@include define-color('tooltip-background', color('shade-2'));
+	@include define-color('tooltip-text', #ffffff);
+	@include define-color('selection', color('primary', -2));
+
+	font-weight: 400;
+
+	h1,
+	h2,
+	h3 {
+		font-weight: 400;
+	}
+}

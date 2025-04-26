@@ -1,0 +1,37 @@
+@use './scheme.scss';
+
+$font-header: 'Public Sans Variable', sans-serif;
+$font-body: 'Public Sans Variable', sans-serif;
+// $font-monospace: 'Roboto Mono Variable', monospace;
+
+:root {
+	@include scheme.define-scheme();
+	@include scheme.define-scheme-dark();
+
+	font-family: $font-body;
+	font-size: 18px;
+	line-height: 1.6;
+	box-sizing: border-box;
+}
+
+body {
+	margin: 0;
+}
+
+* {
+	box-sizing: inherit;
+}
+
+.content-margin {
+	margin: 0 max(32px, calc(25vw - 120px));
+}
+
+a {
+	color: scheme.color('primary');
+	text-decoration: none;
+
+	&:hover,
+	&:focus-visible {
+		text-decoration: underline;
+	}
+}
