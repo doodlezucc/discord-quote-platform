@@ -44,10 +44,12 @@
 		"vitest": "^3.0.0"
 	},
 	"dependencies": {
+		"@discordjs/core": "^2.1.0",
 		"@node-rs/argon2": "^2.0.2",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
 		"better-sqlite3": "^11.8.0",
+		"discord.js": "^14.18.0",
 		"drizzle-orm": "^0.40.0"
 	},
 	"pnpm": {
