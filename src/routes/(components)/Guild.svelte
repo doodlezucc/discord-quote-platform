@@ -1,19 +1,11 @@
 <script lang="ts">
 	import { PUBLIC_DISCORD_CLIENT_ID } from '$env/static/public';
 	import Button from '$lib/components/Button.svelte';
+	import type { UserGuildSnippet } from '$lib/server/queries/user-guilds';
 
-	interface GuildContent {
-		sounds: string[];
-	}
+	type Props = UserGuildSnippet;
 
-	interface Props {
-		id: string;
-		name: string;
-		iconId: string | null;
-		content: GuildContent | null;
-	}
-
-	let { id, name, iconId, content }: Props = $props();
+	let { id, name, iconId, guildData = $bindable() }: Props = $props();
 </script>
 
 <div class="guild">
@@ -29,7 +21,7 @@
 		{/if}
 		<b>{name}</b>
 
-		{#if !content}
+		{#if !guildData}
 			<div class="align-right">
 				<a
 					href="https://discord.com/oauth2/authorize?client_id={PUBLIC_DISCORD_CLIENT_ID}"
@@ -42,7 +34,7 @@
 		{/if}
 	</div>
 
-	{#if content}
+	{#if guildData}
 		<div class="content">
 			<div class="actions">
 				<Button>Add Sound</Button>

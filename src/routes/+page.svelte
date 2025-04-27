@@ -6,6 +6,10 @@
 	import Guild from './(components)/Guild.svelte';
 
 	let { data }: { data: PageData } = $props();
+
+	let guilds = $state(data.guilds);
+	let botEnabledGuilds = $derived(guilds.filter((guild) => guild.guildData !== undefined));
+	let botDisabledGuilds = $derived(guilds.filter((guild) => guild.guildData === undefined));
 </script>
 
 <Header>
@@ -19,13 +23,25 @@
 </Header>
 
 <Content>
-	<h2>Servers</h2>
+	{#if botEnabledGuilds.length > 0}
+		<h2>Servers</h2>
 
-	<div class="guilds">
-		{#each data.guilds as guild (guild.id)}
-			<Guild id={guild.id} name={guild.name} iconId={guild.icon} content={null} />
-		{/each}
-	</div>
+		<div class="guilds">
+			{#each botEnabledGuilds as guild (guild.id)}
+				<Guild {...guild} bind:guildData={guild.guildData} />
+			{/each}
+		</div>
+	{/if}
+
+	{#if botDisabledGuilds.length > 0}
+		<h2>Unconfigured Servers</h2>
+
+		<div class="guilds">
+			{#each botDisabledGuilds as guild (guild.id)}
+				<Guild {...guild} bind:guildData={guild.guildData} />
+			{/each}
+		</div>
+	{/if}
 </Content>
 
 <style lang="scss">

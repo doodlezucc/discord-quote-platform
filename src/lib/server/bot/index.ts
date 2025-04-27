@@ -33,7 +33,7 @@ export class Bot {
 		this.guildStates.set(guildId, new GuildState(guildId));
 	}
 
-	private async disposeGuildState(guildId: string) {
+	private async forgetGuild(guildId: string) {
 		const guildState = this.guildStates.get(guildId);
 
 		if (guildState) {
@@ -53,7 +53,7 @@ export class Bot {
 		console.log('Removed from a guild');
 		await db.delete(table.guild).where(eq(table.guild.id, guild.id));
 
-		this.disposeGuildState(guild.id);
+		// this.forgetGuild(guild.id);
 	}
 }
 
