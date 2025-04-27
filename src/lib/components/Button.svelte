@@ -25,6 +25,7 @@
 		border-radius: 4px;
 		font: inherit;
 		font-size: 16px;
+		text-shadow: 0 1px 3px #0005;
 		cursor: pointer;
 		color: scheme.color('on-primary');
 

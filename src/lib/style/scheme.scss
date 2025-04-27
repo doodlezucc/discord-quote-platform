@@ -20,7 +20,7 @@ $centered-shade: 5;
 
 @mixin define-hue($color-name, $value) {
 	#{var-name-color($color-name, -2)}: sass.scale($value, $saturation: -30%, $lightness: -30%);
-	#{var-name-color($color-name, -1)}: sass.scale($value, $saturation: -18%, $lightness: -18%);
+	#{var-name-color($color-name, -1)}: sass.scale($value, $saturation: -30%, $lightness: -18%);
 
 	#{var-name-color($color-name)}: $value;
 
@@ -43,14 +43,14 @@ $centered-shade: 5;
 @mixin define-scheme-dark() {
 	color-scheme: dark;
 
-	@include define-hue('primary', hsl(355, 100%, 65%));
-	@include define-hue('secondary', hsl(263, 100%, 60%));
+	@include define-hue('primary', hsl(355, 86%, 59%));
+	@include define-hue('secondary', hsl(263, 100%, 64%));
 
 	@include define-color('text-dark', #1b1b1b);
 	@include define-color('text-light', #e0e0e0);
 
 	@include define-color('shade-1', #252525);
-	@include define-color('shade-2', #3b3b3b);
+	@include define-color('shade-2', #333333);
 	@include define-color('shade-3', #666666);
 	@include define-color('shade-4', #a0a0a0);
 
@@ -61,7 +61,7 @@ $centered-shade: 5;
 
 	@include define-color('tooltip-background', color('shade-2'));
 	@include define-color('tooltip-text', #ffffff);
-	@include define-color('selection', color('primary', -2));
+	@include define-color('selection', color('primary', -1));
 
 	font-weight: 400;
 
