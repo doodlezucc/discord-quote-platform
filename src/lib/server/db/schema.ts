@@ -4,12 +4,22 @@ export const guild = sqliteTable('guild', {
 	id: text('id').primaryKey()
 });
 
-export const clip = sqliteTable('clip', {
+export const sound = sqliteTable('sound', {
 	id: text('id').primaryKey(),
-	guild: text('guild_id')
+	guildId: text('guild_id')
 		.references(() => guild.id)
 		.notNull(),
+	assetId: text('asset_id')
+		.references(() => asset.id, { onDelete: 'cascade' })
+		.notNull(),
 	keywords: text('keywords').notNull()
+});
+
+export const asset = sqliteTable('asset', {
+	id: text('id').primaryKey(),
+	createdBy: text('created_by').notNull(),
+	path: text('path').notNull(),
+	mimeType: text('mime_type').notNull()
 });
 
 export const session = sqliteTable('session', {
@@ -20,5 +30,6 @@ export const session = sqliteTable('session', {
 });
 
 export type Guild = typeof guild.$inferSelect;
-export type Clip = typeof clip.$inferSelect;
+export type Sound = typeof sound.$inferSelect;
+export type Asset = typeof asset.$inferSelect;
 export type Session = typeof session.$inferSelect;

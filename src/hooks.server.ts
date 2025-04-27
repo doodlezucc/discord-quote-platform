@@ -1,4 +1,5 @@
 import * as auth from '$lib/server/auth';
+import '$lib/server/bot';
 import type { Handle } from '@sveltejs/kit';
 
 const handleAuth: Handle = async ({ event, resolve }) => {

@@ -27,6 +27,7 @@
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/svelte": "^5.2.4",
 		"@types/better-sqlite3": "^7.6.12",
+		"@types/mime-types": "^2.1.4",
 		"@types/node": "^22",
 		"drizzle-kit": "^0.31.0",
 		"eslint": "^9.18.0",
@@ -52,7 +53,8 @@
 		"@oslojs/encoding": "^1.1.0",
 		"better-sqlite3": "^11.8.0",
 		"discord.js": "^14.18.0",
-		"drizzle-orm": "^0.40.0"
+		"drizzle-orm": "^0.40.0",
+		"mime-types": "^3.0.1"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
