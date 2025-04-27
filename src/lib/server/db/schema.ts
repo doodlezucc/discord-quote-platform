@@ -12,6 +12,7 @@ export const sound = sqliteTable('sound', {
 	assetId: text('asset_id')
 		.references(() => asset.id, { onDelete: 'cascade' })
 		.notNull(),
+	name: text('name').notNull(),
 	keywords: text('keywords').notNull()
 });
 
@@ -24,6 +25,7 @@ export const asset = sqliteTable('asset', {
 
 export const session = sqliteTable('session', {
 	id: text('id').primaryKey(),
+	userId: text('user_id').notNull(),
 	accessToken: text('access_token').notNull(),
 	refreshToken: text('refresh_token').notNull(),
 	expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull()

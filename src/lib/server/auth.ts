@@ -1,8 +1,10 @@
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
+import { OAuth2API } from '@discordjs/core';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
 import type { RequestEvent } from '@sveltejs/kit';
+import { REST } from 'discord.js';
 import { eq } from 'drizzle-orm';
 import { exchangeDiscordAccessToken, refreshDiscordAccessToken } from './discord-oauth2';
 
@@ -25,8 +27,17 @@ function encryptSessionToken(token: string) {
 export async function createSession(sessionToken: string, oauth2Code: string, redirectUri: string) {
 	const oauth2Session = await exchangeDiscordAccessToken(oauth2Code, redirectUri);
 
+	const discordRest = new REST({ authPrefix: 'Bearer' }).setToken(oauth2Session.accessToken);
+	const discordOAuth2Api = new OAuth2API(discordRest);
+	const { user } = await discordOAuth2Api.getCurrentAuthorizationInformation();
+
+	if (!user) {
+		throw new Error('Exchanged access token for session has no Discord user attached');
+	}
+
 	const session: table.Session = {
 		id: encryptSessionToken(sessionToken),
+		userId: user.id,
 		...oauth2Session
 	};
 

@@ -36,6 +36,10 @@ export class AssetManager {
 		return this.getPathToFile(asset.path, accessibleByFrontend);
 	}
 
+	resolveAssetPath(assetPath: string, options?: { accessibleByBackend: boolean }) {
+		return this.getPathToFile(assetPath, options ? !options.accessibleByBackend : true);
+	}
+
 	private getPathToFile(fileName: string, accessibleByFrontend = false) {
 		const root = accessibleByFrontend ? this.rootDirFromFrontend : this.rootDirFromBackend;
 
@@ -46,12 +50,12 @@ export class AssetManager {
 		const contentType = request.headers.get('Content-Type');
 
 		if (!contentType) {
-			throw 'Asset upload failed because Content-Type header is not set';
+			throw new Error('Asset upload failed because Content-Type header is not set');
 		}
 
 		const fileExtension = mime.extension(contentType);
 		if (!fileExtension) {
-			throw 'Asset upload failed because MIME type could not be recognized';
+			throw new Error('Asset upload failed because MIME type could not be recognized');
 		}
 
 		const fileName = await generateUniqueString({

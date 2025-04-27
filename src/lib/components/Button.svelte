@@ -15,31 +15,9 @@
 </button>
 
 <style lang="scss">
-	@use '$lib/style/scheme';
+	@use '$lib/style/components';
 
 	button {
-		appearance: none;
-		padding: 8px 16px;
-		min-width: 100px;
-		border: none;
-		border-radius: 4px;
-		font: inherit;
-		font-size: 16px;
-		text-shadow: 0 1px 3px #0005;
-		cursor: pointer;
-		color: scheme.color('on-primary');
-
-		background-color: scheme.color('primary');
-		transition: 0.15s;
-
-		&:hover,
-		&:focus-visible {
-			background-color: scheme.color('primary', -1);
-		}
-
-		&:active {
-			background-color: scheme.color('primary', -2);
-			transition-duration: 0s;
-		}
+		@extend %button;
 	}
 </style>

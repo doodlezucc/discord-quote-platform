@@ -1,11 +1,28 @@
 <script lang="ts">
 	import { PUBLIC_DISCORD_CLIENT_ID } from '$env/static/public';
 	import Button from '$lib/components/Button.svelte';
-	import type { UserGuildSnippet } from '$lib/server/queries/user-guilds';
+	import FileButton from '$lib/components/FileButton.svelte';
+	import type { GuildDataSoundSnippet, UserGuildSnippet } from '$lib/snippets';
 
 	type Props = UserGuildSnippet;
 
 	let { id, name, iconId, guildData = $bindable() }: Props = $props();
+
+	async function createNewSoundFromFile(file: File) {
+		if (!guildData) return;
+
+		const response = await fetch(`/api/v1/guilds/${id}/sounds`, {
+			method: 'POST',
+			body: file
+		});
+
+		if (!response.ok) {
+			throw new Error('Failed to upload sound');
+		}
+
+		const createdSound: GuildDataSoundSnippet = await response.json();
+		guildData.sounds.push(createdSound);
+	}
 </script>
 
 <div class="guild">
@@ -36,8 +53,17 @@
 
 	{#if guildData}
 		<div class="content">
+			<div class="sounds">
+				{#each guildData.sounds as sound (sound.mediaPath)}
+					<div class="sound">
+						<span>{sound.name}</span>
+						<audio src={sound.mediaPath} controls></audio>
+					</div>
+				{/each}
+			</div>
+
 			<div class="actions">
-				<Button>Add Sound</Button>
+				<FileButton onPickFile={createNewSoundFromFile}>Add Sound</FileButton>
 			</div>
 		</div>
 	{/if}
