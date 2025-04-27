@@ -43,7 +43,7 @@ $centered-shade: 5;
 @mixin define-scheme-dark() {
 	color-scheme: dark;
 
-	@include define-hue('primary', hsl(355, 86%, 59%));
+	@include define-hue('primary', hsl(355, 81%, 58%));
 	@include define-hue('secondary', hsl(263, 100%, 64%));
 
 	@include define-color('text-dark', #1b1b1b);

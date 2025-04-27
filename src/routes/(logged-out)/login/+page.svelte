@@ -1,3 +1,7 @@
+<script lang="ts">
+	import Button from '$lib/components/Button.svelte';
+</script>
+
 <form method="POST" action="?/login">
-	<button type="submit">Log in with Discord</button>
+	<Button type="submit">Log in with Discord</Button>
 </form>
