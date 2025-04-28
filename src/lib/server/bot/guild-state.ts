@@ -40,14 +40,15 @@ export class GuildData {
 		await server.assetManager.disposeAssetsInBatch(allSoundAssetPaths.map((path) => ({ path })));
 	}
 
-	async createSound(userId: string, request: Request): Promise<GuildDataSoundSnippet> {
+	async createSound(options: CreateSoundOptions): Promise<GuildDataSoundSnippet> {
+		const { userId, name, request } = options;
 		const asset = await server.assetManager.uploadAsset(userId, request);
 
 		const sound: table.Sound = {
 			id: crypto.randomUUID(),
 			assetId: asset.id,
 			guildId: this.guildState.id,
-			name: 'New Sound',
+			name: name,
 			keywords: ''
 		};
 
@@ -58,4 +59,10 @@ export class GuildData {
 			mediaPath: server.assetManager.resolveAssetPath(asset.path)
 		};
 	}
+}
+
+interface CreateSoundOptions {
+	userId: string;
+	name: string;
+	request: Request;
 }

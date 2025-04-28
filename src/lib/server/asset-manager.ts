@@ -86,7 +86,7 @@ export class AssetManager {
 
 		await db.insert(table.asset).values(storedAsset);
 
-		console.log('Created asset ' + fileName);
+		console.log(`Created asset ${fileName} of type ${contentType}`);
 		return storedAsset;
 	}
 

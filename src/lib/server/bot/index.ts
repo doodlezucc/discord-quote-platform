@@ -57,16 +57,16 @@ export class Bot {
 	}
 }
 
-export let bot: Bot;
+export const bot = new Promise<Bot>((resolve) => {
+	client.once(Events.ClientReady, async (client) => {
+		console.log('Logged in as', client.user.tag);
+		const guilds = await client.guilds.fetch({});
+		console.log(guilds.size, 'guilds');
 
-client.once(Events.ClientReady, async (client) => {
-	bot = new Bot();
+		// TODO: Add newly joined guilds to database, remove kicked guilds
 
-	console.log('Logged in as', client.user.tag);
-	const guilds = await client.guilds.fetch({});
-	console.log(guilds.size, 'guilds');
-
-	// TODO: Add newly joined guilds to database, remove kicked guilds
+		resolve(new Bot());
+	});
 });
 
 client.on(Events.GuildCreate, async (guild) => {
@@ -76,7 +76,7 @@ client.on(Events.GuildCreate, async (guild) => {
 	});
 
 	if (guildRow === undefined) {
-		bot.onAddedToGuild(guild);
+		(await bot).onAddedToGuild(guild);
 	}
 });
 
@@ -87,13 +87,13 @@ client.on(Events.GuildDelete, async (guild) => {
 	});
 
 	if (guildRow !== undefined) {
-		bot.onRemovedFromGuild(guild);
+		(await bot).onRemovedFromGuild(guild);
 	}
 });
 
-client.on(Events.MessageCreate, (message) => {
+client.on(Events.MessageCreate, async (message) => {
 	const guildMessage = message as Message<true>;
-	bot.guildStates.get(guildMessage.guildId)?.processMessage(guildMessage);
+	(await bot).guildStates.get(guildMessage.guildId)?.processMessage(guildMessage);
 });
 
 client.login(DISCORD_BOT_TOKEN);

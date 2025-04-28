@@ -2,7 +2,8 @@
 	import { PUBLIC_DISCORD_CLIENT_ID } from '$env/static/public';
 	import Button from '$lib/components/Button.svelte';
 	import FileButton from '$lib/components/FileButton.svelte';
-	import type { GuildDataSoundSnippet, UserGuildSnippet } from '$lib/snippets';
+	import { rest } from '$lib/rest';
+	import type { UserGuildSnippet } from '$lib/snippets';
 
 	type Props = UserGuildSnippet;
 
@@ -11,16 +12,7 @@
 	async function createNewSoundFromFile(file: File) {
 		if (!guildData) return;
 
-		const response = await fetch(`/api/v1/guilds/${id}/sounds`, {
-			method: 'POST',
-			body: file
-		});
-
-		if (!response.ok) {
-			throw new Error('Failed to upload sound');
-		}
-
-		const createdSound: GuildDataSoundSnippet = await response.json();
+		const createdSound = await rest.postGuildSound(id, file);
 		guildData.sounds.push(createdSound);
 	}
 </script>

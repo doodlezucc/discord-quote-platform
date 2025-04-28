@@ -3,7 +3,9 @@ import { error, json } from '@sveltejs/kit';
 import { REST, Routes, type RESTGetAPICurrentUserGuildsResult } from 'discord.js';
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async ({ locals, params, request }) => {
+export const POST: RequestHandler = async ({ locals, params, request, url }) => {
+	const soundName = url.searchParams.get('name');
+
 	const userAccessToken = locals.session?.accessToken;
 	const userId = locals.session?.userId;
 
@@ -21,7 +23,12 @@ export const POST: RequestHandler = async ({ locals, params, request }) => {
 		return error(401, { message: 'Missing permissions in guild' });
 	}
 
-	const createdSound = await bot.guildStates.get(params.guildId)!.data.createSound(userId, request);
+	const guildData = (await bot).guildStates.get(params.guildId)!.data;
+	const createdSound = await guildData.createSound({
+		name: soundName ?? 'New Sound',
+		userId: userId,
+		request: request
+	});
 
 	return json(createdSound);
 };
