@@ -4,6 +4,7 @@
 	import FileButton from '$lib/components/FileButton.svelte';
 	import { rest } from '$lib/rest';
 	import type { UserGuildSnippet } from '$lib/snippets';
+	import Sound from './Sound.svelte';
 
 	type Props = UserGuildSnippet;
 
@@ -47,10 +48,7 @@
 		<div class="content">
 			<div class="sounds">
 				{#each guildData.sounds as sound (sound.mediaPath)}
-					<div class="sound">
-						<span>{sound.name}</span>
-						<audio src={sound.mediaPath} controls></audio>
-					</div>
+					<Sound {...sound} bind:name={sound.name} bind:keywords={sound.keywords} />
 				{/each}
 			</div>
 
@@ -103,5 +101,10 @@
 
 	.align-right {
 		margin-left: auto;
+	}
+
+	.sounds {
+		max-height: 200px;
+		overflow-y: auto;
 	}
 </style>
