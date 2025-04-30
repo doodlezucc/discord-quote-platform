@@ -45,7 +45,7 @@ export async function createSession(sessionToken: string, oauth2Code: string, re
 	return session;
 }
 
-export async function validateSessionToken(token: string) {
+export async function validateSessionToken(token: string): Promise<Session> {
 	const sessionId = encryptSessionToken(token);
 	const [session] = await db.select().from(table.session).where(eq(table.session.id, sessionId));
 
@@ -67,6 +67,11 @@ export async function validateSessionToken(token: string) {
 			.update(table.session)
 			.set({ ...oauth2Session })
 			.where(eq(table.session.id, session.id));
+
+		return {
+			...session,
+			...oauth2Session
+		};
 	}
 
 	return session;
