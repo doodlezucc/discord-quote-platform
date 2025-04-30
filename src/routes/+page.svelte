@@ -17,7 +17,7 @@
 		<span>{data.user.username}</span>
 
 		<form method="POST" action="?/logout">
-			<Button type="submit">Log Out</Button>
+			<Button buttonProps={{ type: 'submit' }}>Log Out</Button>
 		</form>
 	{/snippet}
 </Header>

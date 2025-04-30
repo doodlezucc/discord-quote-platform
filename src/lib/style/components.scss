@@ -13,10 +13,9 @@
 	color: scheme.color('on-primary');
 
 	background-color: scheme.color('primary');
-	transition: 0.15s;
+	transition: background-color 0.15s;
 
-	&:hover,
-	&:focus-visible {
+	&:hover {
 		background-color: scheme.color('primary', -1);
 	}
 

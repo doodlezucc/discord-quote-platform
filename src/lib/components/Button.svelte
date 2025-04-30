@@ -1,16 +1,18 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import type { HTMLButtonAttributes } from 'svelte/elements';
 
 	interface Props {
-		type?: HTMLButtonElement['type'];
 		onclick?: () => void;
 		children: Snippet;
+
+		buttonProps?: Omit<HTMLButtonAttributes, 'onclick' | 'children'>;
 	}
 
-	let { type, onclick, children }: Props = $props();
+	let { onclick, children, buttonProps }: Props = $props();
 </script>
 
-<button {type} {onclick}>
+<button {...buttonProps} {onclick}>
 	{@render children()}
 </button>
 

@@ -38,7 +38,7 @@
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					<Button>Add Clipbot</Button>
+					<Button buttonProps={{ tabindex: -1 }}>Add Clipbot</Button>
 				</a>
 			</div>
 		{/if}
