@@ -3,7 +3,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import FileButton from '$lib/components/FileButton.svelte';
 	import { rest } from '$lib/rest';
-	import type { UserGuildSnippet } from '$lib/snippets';
+	import type { GuildDataSoundSnippet, UserGuildSnippet } from '$lib/snippets';
 	import Sound from './Sound.svelte';
 
 	type Props = UserGuildSnippet;
@@ -16,6 +16,8 @@
 		const createdSound = await rest.postGuildSound(id, file);
 		guildData.sounds.push(createdSound);
 	}
+
+	async function removeSound(sound: GuildDataSoundSnippet) {}
 </script>
 
 <div class="guild">
@@ -45,16 +47,19 @@
 	</div>
 
 	{#if guildData}
-		<div class="content">
-			<div class="sounds">
-				{#each guildData.sounds as sound (sound.mediaPath)}
-					<Sound {...sound} bind:name={sound.name} bind:keywords={sound.keywords} />
-				{/each}
-			</div>
+		<div class="sounds">
+			{#each guildData.sounds as sound (sound.id)}
+				<Sound
+					{...sound}
+					bind:name={sound.name}
+					bind:keywords={sound.keywords}
+					onRemove={() => removeSound(sound)}
+				/>
+			{/each}
+		</div>
 
-			<div class="actions">
-				<FileButton onPickFile={createNewSoundFromFile}>Add Sound</FileButton>
-			</div>
+		<div class="actions">
+			<FileButton onPickFile={createNewSoundFromFile}>Add Sound</FileButton>
 		</div>
 	{/if}
 </div>
@@ -95,16 +100,16 @@
 		border: 2px dashed scheme.color('separator');
 	}
 
-	.content {
-		border-top: 1px solid scheme.color('separator');
-	}
-
 	.align-right {
 		margin-left: auto;
 	}
 
 	.sounds {
-		max-height: 200px;
+		border-top: 1px solid scheme.color('separator');
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		max-height: 400px;
 		overflow-y: auto;
 	}
 </style>

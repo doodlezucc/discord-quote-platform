@@ -51,7 +51,7 @@ $centered-shade: 5;
 
 	@include define-color('shade-1', #252525);
 	@include define-color('shade-2', #333333);
-	@include define-color('shade-3', #666666);
+	@include define-color('shade-3', #4d4d4d);
 	@include define-color('shade-4', #a0a0a0);
 
 	@include define-color('background', color('text-dark'));

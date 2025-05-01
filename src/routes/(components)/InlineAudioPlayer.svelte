@@ -123,11 +123,19 @@
 	.audio {
 		display: flex;
 		align-items: center;
+		background-color: scheme.color('shade-2');
+		border-radius: 4px;
+		padding-left: 8px;
+		padding-right: 4px;
 	}
 
 	span {
 		min-width: 3em;
 		text-align: center;
+
+		/** Account for vertically uncentered digits in font */
+		font-size: 17px;
+		padding-top: 2px;
 	}
 
 	@function stop-gradient($stop-percentage, $color-before, $color-after) {

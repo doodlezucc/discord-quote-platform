@@ -1,4 +1,5 @@
 export interface GuildDataSoundSnippet {
+	id: string;
 	name: string;
 	keywords: string;
 	mediaPath: string;

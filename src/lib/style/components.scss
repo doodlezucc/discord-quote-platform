@@ -1,15 +1,23 @@
 @use './scheme.scss';
 
-%button {
+%base-button {
 	appearance: none;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
 	padding: 8px 16px;
 	min-width: 100px;
 	border: none;
 	border-radius: 4px;
 	font: inherit;
 	font-size: 16px;
-	text-shadow: 0 1px 3px #0005;
 	cursor: pointer;
+}
+
+%button {
+	@extend %base-button;
+	text-shadow: 0 1px 3px #0005;
 	color: scheme.color('on-primary');
 
 	background-color: scheme.color('primary');
@@ -21,6 +29,24 @@
 
 	&:active {
 		background-color: scheme.color('primary', -2);
+		transition-duration: 0s;
+	}
+}
+
+%button.outlined {
+	@extend %base-button;
+	border: 1px solid scheme.color('separator');
+	color: scheme.color('text');
+
+	background-color: scheme.color('shade-1');
+	transition: background-color 0.15s;
+
+	&:hover {
+		background-color: scheme.color('shade-2');
+	}
+
+	&:active {
+		background-color: scheme.color('shade-3');
 		transition-duration: 0s;
 	}
 }

@@ -49,6 +49,7 @@ async function convertGuildToSnippet(
 			iconId: guild.icon,
 			guildData: {
 				sounds: sounds.map(({ sound, asset }) => ({
+					id: sound.id,
 					name: sound.name,
 					keywords: sound.keywords,
 					mediaPath: server.assetManager.resolveAssetPath(asset!.path)
