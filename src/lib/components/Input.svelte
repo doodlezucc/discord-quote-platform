@@ -78,12 +78,16 @@
 	input {
 		min-width: 300px;
 		margin-top: 1px;
-		border-bottom: 1px solid transparent;
+		border-bottom: 1px solid scheme.color('separator');
 		padding: 0;
+
+		&:read-only {
+			border-bottom-color: transparent;
+		}
 
 		&:hover,
 		&:focus {
-			border-bottom-color: scheme.color('separator');
+			border-bottom-color: scheme.color('shade-4');
 		}
 	}
 
