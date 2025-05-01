@@ -3,8 +3,8 @@
 	import IconButton from '$lib/components/IconButton.svelte';
 	import Input from '$lib/components/Input.svelte';
 	import type { GuildDataSoundSnippet } from '$lib/snippets';
-	import ChevronDownIcon from '@lucide/svelte/icons/chevron-down';
-	import XIcon from '@lucide/svelte/icons/x';
+	import PencilIcon from '@lucide/svelte/icons/pencil';
+	import TrashIcon from '@lucide/svelte/icons/trash';
 	import InlineAudioPlayer from './InlineAudioPlayer.svelte';
 	import KeywordChip from './KeywordChip.svelte';
 
@@ -18,25 +18,33 @@
 
 	let nameInput = $state<Input>();
 	let summary = $state<HTMLElement>();
+	let container = $state<HTMLElement>();
 
 	function onSummaryClick(ev: MouseEvent) {
 		if (!isExpanded) {
 			ev.preventDefault();
 			isExpanded = !isExpanded;
 			nameInput!.focus();
+			container!.scrollIntoView({ behavior: 'smooth' });
 		}
 	}
 
 	let separateKeywords = $derived(keywords.split(/\s+/gm).filter((keyword) => keyword !== ''));
 </script>
 
-<div class="sound" aria-expanded={isExpanded}>
+<div class="sound" aria-expanded={isExpanded} bind:this={container}>
 	<div class="overview">
 		<InlineAudioPlayer src={mediaPath} />
 
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
 		<div class="summary" onmousedown={onSummaryClick} bind:this={summary}>
-			<Input placeholder="Name..." type="text" bind:value={name} bind:this={nameInput} />
+			<Input
+				placeholder="Name..."
+				type="text"
+				bind:value={name}
+				bind:this={nameInput}
+				readonly={!isExpanded}
+			/>
 
 			<div class="keywords">
 				{#each separateKeywords as keyword}
@@ -44,11 +52,11 @@
 				{/each}
 			</div>
 
-			<div class="expand-icon">
-				<IconButton icon={ChevronDownIcon} onclick={() => (isExpanded = !isExpanded)}>
-					Collapse
-				</IconButton>
-			</div>
+			{#if !isExpanded}
+				<div class="expand-icon">
+					<IconButton icon={PencilIcon} stroke onclick={onSummaryClick}>Edit</IconButton>
+				</div>
+			{/if}
 		</div>
 	</div>
 
@@ -56,7 +64,11 @@
 		<Input placeholder="Keywords..." multiline bind:value={keywords} />
 
 		<div class="actions">
-			<Button onclick={onRemove} outline icon={XIcon} iconColor="primary">Delete</Button>
+			<Button onclick={onRemove} outline icon={TrashIcon} iconStroke iconColor="primary">
+				Delete
+			</Button>
+			<div class="expand"></div>
+			<Button onclick={onRemove} outline>Discard Changes</Button>
 			<Button onclick={onRemove}>Save</Button>
 		</div>
 	</div>
@@ -86,8 +98,10 @@
 		}
 
 		&[aria-expanded='true'] {
+			outline: 2px dashed scheme.color('shade-4');
+
 			.expand-icon {
-				rotate: 180deg;
+				color: scheme.color('primary');
 			}
 		}
 	}
@@ -103,7 +117,6 @@
 		display: grid;
 		grid-template-columns: 1fr minmax(auto, max-content) max-content;
 		padding: 12px;
-		padding-right: 0;
 	}
 
 	.keywords {
@@ -117,19 +130,18 @@
 
 		:global(> :first-child) {
 			margin-left: 24px;
-			font-weight: bold;
 		}
 	}
 
 	.expand-icon {
-		padding: 0 16px;
-		transition: rotate 0.5s;
+		padding-left: 16px;
+		padding-right: 4px;
 	}
 
 	.details {
 		overflow: hidden;
 		display: grid;
-		grid-template-columns: 1fr max-content;
+		grid-template-rows: 1fr max-content;
 		gap: 12px;
 		padding: 12px;
 		padding-top: 0;
@@ -141,14 +153,16 @@
 			height: 0;
 		}
 		&[aria-hidden='false'] {
-			height: 120px;
+			height: 200px;
 		}
 	}
 
 	.actions {
 		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.expand {
+		flex: 1;
 	}
 </style>

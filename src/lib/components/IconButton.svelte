@@ -35,7 +35,7 @@
 		display: grid;
 		place-content: center;
 		background: none;
-		color: scheme.color('text');
+		color: inherit;
 		padding: 4px;
 		border: none;
 		border-radius: 50%;

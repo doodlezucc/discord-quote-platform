@@ -5,6 +5,7 @@
 		placeholder: string;
 		value: string;
 		onSubmit?: (value: string) => void;
+		readonly?: boolean;
 	} & (
 		| {
 				type: HTMLInputAttributes['type'];
@@ -16,7 +17,7 @@
 		  }
 	);
 
-	let { placeholder, value = $bindable(), onSubmit, type, multiline }: Props = $props();
+	let { placeholder, value = $bindable(), onSubmit, readonly, type, multiline }: Props = $props();
 
 	let element = $state<HTMLInputElement | HTMLTextAreaElement>();
 
@@ -44,13 +45,22 @@
 	<input
 		{placeholder}
 		{type}
+		{readonly}
+		tabindex={readonly ? -1 : undefined}
 		bind:value
 		bind:this={element}
 		onkeydown={onKeyDown}
 		onblur={submit}
 	/>
 {:else}
-	<textarea {placeholder} bind:value bind:this={element} onkeydown={onKeyDown} onblur={submit}
+	<textarea
+		{placeholder}
+		{readonly}
+		tabindex={readonly ? -1 : undefined}
+		bind:value
+		bind:this={element}
+		onkeydown={onKeyDown}
+		onblur={submit}
 	></textarea>
 {/if}
 
