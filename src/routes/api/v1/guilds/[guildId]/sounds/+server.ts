@@ -1,34 +1,19 @@
-import { bot } from '$lib/server/bot';
-import { error, json } from '@sveltejs/kit';
-import { REST, Routes, type RESTGetAPICurrentUserGuildsResult } from 'discord.js';
+import { authorized } from '$lib/server/rest/auth';
+import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
-export const POST: RequestHandler = async ({ locals, params, request, url }) => {
+export const POST: RequestHandler = authorized(async ({ params, request, url, auth }) => {
+	const { userId } = auth.requireSession();
+	await auth.requireMemberOfGuild(params.guildId);
+
+	const guildState = await auth.requireGuildState(params.guildId);
+
 	const soundName = url.searchParams.get('name');
-
-	const userAccessToken = locals.session?.accessToken;
-	const userId = locals.session?.userId;
-
-	if (!userAccessToken || !userId) {
-		return error(401, { message: 'Unable to infer Discord user access' });
-	}
-
-	// Verify that the user is part of the specified guild
-	const rest = new REST({ authPrefix: 'Bearer' }).setToken(userAccessToken);
-	const userGuilds = (await rest.get(Routes.userGuilds())) as RESTGetAPICurrentUserGuildsResult;
-
-	const guildUser = userGuilds.find((guild) => guild.id === params.guildId);
-
-	if (!guildUser) {
-		return error(401, { message: 'Missing permissions in guild' });
-	}
-
-	const guildData = (await bot).guildStates.get(params.guildId)!.data;
-	const createdSound = await guildData.createSound({
+	const createdSound = await guildState.data.createSound({
 		name: soundName ?? 'New Sound',
 		userId: userId,
 		request: request
 	});
 
 	return json(createdSound);
-};
+});

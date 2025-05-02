@@ -54,6 +54,7 @@ export class GuildData {
 
 		await db.insert(table.sound).values(sound);
 		return {
+			id: sound.id,
 			name: sound.name,
 			keywords: sound.keywords,
 			mediaPath: server.assetManager.resolveAssetPath(asset.path)
