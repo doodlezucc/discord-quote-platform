@@ -52,7 +52,8 @@ async function convertGuildToSnippet(
 					id: sound.id,
 					name: sound.name,
 					keywords: sound.keywords,
-					mediaPath: server.assetManager.resolveAssetPath(asset!.path)
+					mediaPath: server.assetManager.resolveAssetPath(asset!.path),
+					createdBy: asset!.createdBy
 				}))
 			}
 		};

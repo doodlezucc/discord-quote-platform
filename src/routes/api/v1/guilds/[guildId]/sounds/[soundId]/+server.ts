@@ -3,7 +3,8 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 
 export const PATCH: RequestHandler = REST(async ({ params, rest }) => {
-	const partialSound = rest.parseQueryParameters({
+	const { userId } = rest.requireSession();
+	const patch = rest.parseQueryParameters({
 		name: zquery.string().optional(),
 		keywords: zquery.string().optional()
 	});
@@ -11,16 +12,17 @@ export const PATCH: RequestHandler = REST(async ({ params, rest }) => {
 	await rest.requireMemberOfGuild(params.guildId);
 
 	const guildState = await rest.requireGuildState(params.guildId);
-	const updatedSound = await guildState.data.patchSound(params.soundId, partialSound);
+	const updatedSound = await guildState.data.patchSound({ userId, id: params.soundId, patch });
 
 	return json(updatedSound);
 });
 
 export const DELETE: RequestHandler = REST(async ({ params, rest }) => {
+	const { userId } = rest.requireSession();
 	await rest.requireMemberOfGuild(params.guildId);
 
 	const guildState = await rest.requireGuildState(params.guildId);
-	await guildState.data.deleteSound(params.soundId);
+	await guildState.data.deleteSound({ userId, id: params.soundId });
 
 	return new Response();
 });
