@@ -2,25 +2,34 @@
 	import Button from '$lib/components/Button.svelte';
 	import IconButton from '$lib/components/IconButton.svelte';
 	import Input from '$lib/components/Input.svelte';
-	import type { GuildDataSoundSnippet } from '$lib/snippets';
+	import type { GuildDataSoundPatch, GuildDataSoundSnippet } from '$lib/snippets';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import TrashIcon from '@lucide/svelte/icons/trash';
 	import InlineAudioPlayer from './InlineAudioPlayer.svelte';
 	import KeywordChip from './KeywordChip.svelte';
 
 	type Props = GuildDataSoundSnippet & {
-		onRemove: () => void;
+		handlePatch: (patch: GuildDataSoundPatch) => Promise<void>;
+		handleDelete: () => void;
 	};
 
-	let { onRemove, name = $bindable(), mediaPath, keywords = $bindable() }: Props = $props();
+	let {
+		handlePatch,
+		handleDelete,
+		name = $bindable(),
+		mediaPath,
+		keywords = $bindable()
+	}: Props = $props();
+
+	let editingName = $derived(name);
+	let editingKeywords = $derived(keywords);
 
 	let isExpanded = $state(false);
 
 	let nameInput = $state<Input>();
-	let summary = $state<HTMLElement>();
 	let container = $state<HTMLElement>();
 
-	function onSummaryClick(ev: MouseEvent) {
+	function expand(ev: MouseEvent) {
 		if (!isExpanded) {
 			ev.preventDefault();
 			isExpanded = !isExpanded;
@@ -29,7 +38,32 @@
 		}
 	}
 
-	let separateKeywords = $derived(keywords.split(/\s+/gm).filter((keyword) => keyword !== ''));
+	let isSaving = $state(false);
+
+	async function saveChanges() {
+		isSaving = true;
+
+		try {
+			await handlePatch({
+				name: editingName,
+				keywords: editingKeywords
+			});
+
+			isExpanded = false;
+		} finally {
+			isSaving = false;
+		}
+	}
+
+	function discardChanges() {
+		editingName = name;
+		editingKeywords = keywords;
+		isExpanded = false;
+	}
+
+	let separateKeywords = $derived(
+		editingKeywords.split(/\s+/gm).filter((keyword) => keyword !== '')
+	);
 </script>
 
 <div class="sound" aria-expanded={isExpanded} bind:this={container}>
@@ -37,11 +71,11 @@
 		<InlineAudioPlayer src={mediaPath} />
 
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="summary" onmousedown={onSummaryClick} bind:this={summary}>
+		<div class="summary" onmousedown={expand}>
 			<Input
 				placeholder="Name..."
 				type="text"
-				bind:value={name}
+				bind:value={editingName}
 				bind:this={nameInput}
 				readonly={!isExpanded}
 			/>
@@ -54,22 +88,22 @@
 
 			{#if !isExpanded}
 				<div class="expand-icon">
-					<IconButton icon={PencilIcon} stroke onclick={onSummaryClick}>Edit</IconButton>
+					<IconButton icon={PencilIcon} stroke onclick={expand}>Edit</IconButton>
 				</div>
 			{/if}
 		</div>
 	</div>
 
 	<div class="details" aria-hidden={!isExpanded}>
-		<Input placeholder="Keywords..." multiline bind:value={keywords} />
+		<Input placeholder="Keywords..." multiline bind:value={editingKeywords} />
 
 		<div class="actions">
-			<Button onclick={onRemove} outline icon={TrashIcon} iconStroke iconColor="primary">
+			<Button onclick={handleDelete} outline icon={TrashIcon} iconStroke iconColor="primary">
 				Delete
 			</Button>
 			<div class="expand"></div>
-			<Button onclick={onRemove} outline>Discard Changes</Button>
-			<Button onclick={onRemove}>Save</Button>
+			<Button onclick={discardChanges} outline>Discard Changes</Button>
+			<Button onclick={saveChanges} disabled={isSaving}>Save</Button>
 		</div>
 	</div>
 </div>

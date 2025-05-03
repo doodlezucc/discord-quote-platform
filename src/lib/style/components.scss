@@ -13,6 +13,10 @@
 	font: inherit;
 	font-size: 16px;
 	cursor: pointer;
+
+	&:disabled {
+		cursor: default;
+	}
 }
 
 %button {
@@ -23,13 +27,18 @@
 	background-color: scheme.color('primary');
 	transition: background-color 0.15s;
 
-	&:hover {
+	&:not(:disabled):hover {
 		background-color: scheme.color('primary', -1);
 	}
 
-	&:active {
+	&:not(:disabled):active {
 		background-color: scheme.color('primary', -2);
 		transition-duration: 0s;
+	}
+
+	&:disabled {
+		background-color: scheme.color('shade-3');
+		opacity: 0.8;
 	}
 }
 
@@ -41,11 +50,11 @@
 	background-color: scheme.color('shade-1');
 	transition: background-color 0.15s;
 
-	&:hover {
+	&:not(:disabled):hover {
 		background-color: scheme.color('shade-2');
 	}
 
-	&:active {
+	&:not(:disabled):active {
 		background-color: scheme.color('shade-3');
 		transition-duration: 0s;
 	}

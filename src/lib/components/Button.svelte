@@ -9,10 +9,11 @@
 		iconColor?: 'primary' | 'text';
 		outline?: boolean;
 
-		onclick?: () => void;
+		onclick?: (ev: MouseEvent) => void;
+		disabled?: boolean;
 		children: Snippet;
 
-		buttonProps?: Omit<HTMLButtonAttributes, 'onclick' | 'children'>;
+		buttonProps?: Omit<HTMLButtonAttributes, 'onclick' | 'disabled' | 'children'>;
 	}
 
 	let {
@@ -21,12 +22,13 @@
 		iconColor = 'text',
 		outline = false,
 		onclick,
+		disabled,
 		children,
 		buttonProps
 	}: Props = $props();
 </script>
 
-<button {...buttonProps} {onclick} class:outlined={outline}>
+<button {...buttonProps} {onclick} {disabled} class:outlined={outline}>
 	{#if Icon}
 		<span data-color={iconColor}>
 			<Icon size={20} fill={iconStroke ? 'transparent' : 'currentColor'} aria-hidden />

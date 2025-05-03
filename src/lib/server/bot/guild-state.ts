@@ -1,6 +1,6 @@
-import type { GuildDataSoundSnippet } from '$lib/snippets';
+import type { GuildDataSoundPatch, GuildDataSoundSnippet } from '$lib/snippets';
 import type { Message } from 'discord.js';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { server } from '..';
 import { db } from '../db';
 import * as table from '../db/schema';
@@ -58,6 +58,28 @@ export class GuildData {
 			name: sound.name,
 			keywords: sound.keywords,
 			mediaPath: server.assetManager.resolveAssetPath(asset.path)
+		};
+	}
+
+	async patchSound(id: string, partialSound: GuildDataSoundPatch): Promise<GuildDataSoundSnippet> {
+		const [original = undefined] = await db
+			.select()
+			.from(table.sound)
+			.where(and(eq(table.sound.guildId, this.guildState.id), eq(table.sound.id, id)))
+			.leftJoin(table.asset, eq(table.sound.assetId, table.asset.id));
+
+		if (!original) {
+			throw new Error(`Invalid sound ID ${id}`);
+		}
+
+		await db.update(table.sound).set(partialSound).where(eq(table.sound.id, id));
+
+		return {
+			id: original.sound.id,
+			name: original.sound.name,
+			keywords: original.sound.keywords,
+			mediaPath: server.assetManager.resolveAssetPath(original.asset!.path),
+			...partialSound
 		};
 	}
 }

@@ -5,6 +5,8 @@ export interface GuildDataSoundSnippet {
 	mediaPath: string;
 }
 
+export type GuildDataSoundPatch = Partial<Pick<GuildDataSoundSnippet, 'name' | 'keywords'>>;
+
 export interface GuildDataSnippet {
 	sounds: GuildDataSoundSnippet[];
 }

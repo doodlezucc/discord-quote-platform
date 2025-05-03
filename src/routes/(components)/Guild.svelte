@@ -3,7 +3,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import FileButton from '$lib/components/FileButton.svelte';
 	import { rest } from '$lib/rest';
-	import type { GuildDataSoundSnippet, UserGuildSnippet } from '$lib/snippets';
+	import type { GuildDataSoundPatch, GuildDataSoundSnippet, UserGuildSnippet } from '$lib/snippets';
 	import Sound from './Sound.svelte';
 
 	type Props = UserGuildSnippet;
@@ -11,13 +11,18 @@
 	let { id, name, iconId, guildData = $bindable() }: Props = $props();
 
 	async function createNewSoundFromFile(file: File) {
-		if (!guildData) return;
-
-		const createdSound = await rest.postGuildSound(id, file);
-		guildData.sounds.push(createdSound);
+		const createdSound = await rest.guildSoundPost(id, file);
+		guildData!.sounds.push(createdSound);
 	}
 
-	async function removeSound(sound: GuildDataSoundSnippet) {}
+	async function patchSound(sound: GuildDataSoundSnippet, patch: GuildDataSoundPatch) {
+		const soundIndex = guildData!.sounds.indexOf(sound);
+		const updatedSound = await rest.guildSoundPatch(id, sound.id, patch);
+
+		guildData!.sounds[soundIndex] = { ...sound, ...updatedSound };
+	}
+
+	async function deleteSound(sound: GuildDataSoundSnippet) {}
 </script>
 
 <div class="guild">
@@ -53,7 +58,8 @@
 					{...sound}
 					bind:name={sound.name}
 					bind:keywords={sound.keywords}
-					onRemove={() => removeSound(sound)}
+					handlePatch={(patch) => patchSound(sound, patch)}
+					handleDelete={() => deleteSound(sound)}
 				/>
 			{/each}
 		</div>

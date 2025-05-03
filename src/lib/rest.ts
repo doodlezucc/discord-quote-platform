@@ -1,4 +1,4 @@
-import type { GuildDataSoundSnippet } from './snippets';
+import type { GuildDataSoundPatch, GuildDataSoundSnippet } from './snippets';
 
 type HttpMethod = 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT';
 
@@ -8,7 +8,7 @@ type RestCallOptions = Omit<RequestInit, 'method'> & {
 
 class RestCaller {
 	private async send(method: HttpMethod, path: string, options?: RestCallOptions) {
-		let url = path;
+		let url = `/api${path}`;
 
 		if (options?.queryParameters) {
 			const urlSearchParams = new URLSearchParams();
@@ -41,13 +41,21 @@ class RestCaller {
 		return (await response.json()) as T;
 	}
 
-	async postGuildSound(guildId: string, file: File) {
-		return await this.request<GuildDataSoundSnippet>('POST', `/api/v1/guilds/${guildId}/sounds`, {
+	async guildSoundPost(guildId: string, file: File) {
+		return await this.request<GuildDataSoundSnippet>('POST', `/v1/guilds/${guildId}/sounds`, {
 			queryParameters: {
 				name: file.name
 			},
 			body: file
 		});
+	}
+
+	async guildSoundPatch(guildId: string, soundId: string, patch: GuildDataSoundPatch) {
+		return await this.request<GuildDataSoundSnippet>(
+			'PATCH',
+			`/v1/guilds/${guildId}/sounds/${soundId}`,
+			{ queryParameters: patch }
+		);
 	}
 }
 
