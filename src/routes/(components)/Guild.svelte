@@ -22,7 +22,11 @@
 		guildData!.sounds[soundIndex] = { ...sound, ...updatedSound };
 	}
 
-	async function deleteSound(sound: GuildDataSoundSnippet) {}
+	async function deleteSound(sound: GuildDataSoundSnippet) {
+		await rest.guildSoundDelete(id, sound.id);
+
+		guildData!.sounds = guildData!.sounds.filter((someSound) => someSound !== sound);
+	}
 </script>
 
 <div class="guild">

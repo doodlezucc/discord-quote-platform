@@ -1,14 +1,15 @@
 import { base } from '$app/paths';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import * as fs from 'fs/promises';
 import * as mime from 'mime-types';
 import { db } from './db';
 import * as table from './db/schema';
 import { generateUniqueString } from './util/generate-string';
 
-type PartialAsset = {
+interface PartialAsset {
+	id: string;
 	path: string;
-};
+}
 
 export class AssetManager {
 	private readonly directoryName = 'user-media';
@@ -90,12 +91,26 @@ export class AssetManager {
 		return storedAsset;
 	}
 
-	async disposeAsset(asset: PartialAsset) {
-		const filePath = this.getPathToFile(asset.path);
+	async deleteAsset(asset: PartialAsset) {
+		await db.delete(table.asset).where(eq(table.asset.id, asset.id));
+
+		await this.disposeAssetFile(asset.path);
+	}
+
+	async deleteAssetsInBatch(assets: PartialAsset[]) {
+		const allAssetIds = assets.map((asset) => asset.id);
+		const allAssetPaths = assets.map((asset) => asset.path);
+
+		await db.delete(table.asset).where(inArray(table.asset.id, allAssetIds));
+		await this.disposeAssetFilesInBatch(allAssetPaths);
+	}
+
+	private async disposeAssetFile(assetPath: string) {
+		const filePath = this.getPathToFile(assetPath);
 		await fs.unlink(filePath);
 	}
 
-	async disposeAssetsInBatch(assets: PartialAsset[]) {
-		await Promise.allSettled(assets.map((asset) => this.disposeAsset(asset)));
+	private async disposeAssetFilesInBatch(assetPaths: string[]) {
+		await Promise.allSettled(assetPaths.map((asset) => this.disposeAssetFile(asset)));
 	}
 }

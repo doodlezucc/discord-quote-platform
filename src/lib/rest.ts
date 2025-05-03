@@ -7,7 +7,7 @@ type RestCallOptions = Omit<RequestInit, 'method'> & {
 };
 
 class RestCaller {
-	private async send(method: HttpMethod, path: string, options?: RestCallOptions) {
+	private async request(method: HttpMethod, path: string, options?: RestCallOptions) {
 		let url = `/api${path}`;
 
 		if (options?.queryParameters) {
@@ -27,22 +27,22 @@ class RestCaller {
 			...options
 		});
 
-		return response;
-	}
-
-	private async request<T>(method: HttpMethod, path: string, options?: RestCallOptions) {
-		const response = await this.send(method, path, options);
-
 		if (!response.ok) {
 			const responseText = response.text();
 			throw new Error(`Error during REST call (${path}): ${responseText}`);
 		}
 
+		return response;
+	}
+
+	private async requestObject<T>(method: HttpMethod, path: string, options?: RestCallOptions) {
+		const response = await this.request(method, path, options);
+
 		return (await response.json()) as T;
 	}
 
 	async guildSoundPost(guildId: string, file: File) {
-		return await this.request<GuildDataSoundSnippet>('POST', `/v1/guilds/${guildId}/sounds`, {
+		return await this.requestObject<GuildDataSoundSnippet>('POST', `/v1/guilds/${guildId}/sounds`, {
 			queryParameters: {
 				name: file.name
 			},
@@ -51,11 +51,15 @@ class RestCaller {
 	}
 
 	async guildSoundPatch(guildId: string, soundId: string, patch: GuildDataSoundPatch) {
-		return await this.request<GuildDataSoundSnippet>(
+		return await this.requestObject<GuildDataSoundSnippet>(
 			'PATCH',
 			`/v1/guilds/${guildId}/sounds/${soundId}`,
 			{ queryParameters: patch }
 		);
+	}
+
+	async guildSoundDelete(guildId: string, soundId: string) {
+		await this.request('DELETE', `/v1/guilds/${guildId}/sounds/${soundId}`);
 	}
 }
 

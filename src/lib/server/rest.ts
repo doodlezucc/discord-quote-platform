@@ -57,7 +57,7 @@ export class RestScope {
 		const guildUser = userGuilds.find((guild) => guild.id === guildId);
 
 		if (!guildUser) {
-			throw error(401, { message: 'Missing permissions in guild' });
+			throw error(403, { message: 'Not a guild member' });
 		}
 
 		return guildUser;
@@ -67,7 +67,7 @@ export class RestScope {
 		const guildState = (await bot).guildStates.get(guildId);
 
 		if (!guildState) {
-			throw error(401, { message: 'Guild is not registered with a bot state' });
+			throw error(400, { message: 'Guild is not registered with a bot state' });
 		}
 
 		return guildState;

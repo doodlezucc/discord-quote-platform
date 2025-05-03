@@ -28,16 +28,17 @@ export class GuildData {
 
 	async delete() {
 		const allSounds = await db
-			.select({ assetPath: table.asset.path })
+			.select({ assetId: table.asset.id, assetPath: table.asset.path })
 			.from(table.sound)
 			.where(eq(table.sound.guildId, this.guildState.id))
 			.leftJoin(table.asset, eq(table.sound.assetId, table.asset.id));
 
-		const allSoundAssetPaths = allSounds
-			.map((sound) => sound.assetPath)
-			.filter((assetPath) => assetPath !== null);
-
-		await server.assetManager.disposeAssetsInBatch(allSoundAssetPaths.map((path) => ({ path })));
+		await server.assetManager.deleteAssetsInBatch(
+			allSounds.map((sound) => ({
+				id: sound.assetId!,
+				path: sound.assetPath!
+			}))
+		);
 	}
 
 	async createSound(options: CreateSoundOptions): Promise<GuildDataSoundSnippet> {
@@ -65,7 +66,7 @@ export class GuildData {
 		const [original = undefined] = await db
 			.select()
 			.from(table.sound)
-			.where(and(eq(table.sound.guildId, this.guildState.id), eq(table.sound.id, id)))
+			.where(and(eq(table.sound.id, id), eq(table.sound.guildId, this.guildState.id)))
 			.leftJoin(table.asset, eq(table.sound.assetId, table.asset.id));
 
 		if (!original) {
@@ -81,6 +82,20 @@ export class GuildData {
 			mediaPath: server.assetManager.resolveAssetPath(original.asset!.path),
 			...partialSound
 		};
+	}
+
+	async deleteSound(id: string) {
+		const [entry = undefined] = await db
+			.select({ assetId: table.asset.id, assetPath: table.asset.path })
+			.from(table.sound)
+			.where(and(eq(table.sound.guildId, this.guildState.id), eq(table.sound.id, id)))
+			.leftJoin(table.asset, eq(table.sound.assetId, table.asset.id));
+
+		if (!entry) {
+			throw new Error(`Invalid sound ID ${id}`);
+		}
+
+		await server.assetManager.deleteAsset({ id: entry.assetId!, path: entry.assetPath! });
 	}
 }
 

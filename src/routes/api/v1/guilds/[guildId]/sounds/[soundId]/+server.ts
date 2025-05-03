@@ -15,3 +15,12 @@ export const PATCH: RequestHandler = REST(async ({ params, rest }) => {
 
 	return json(updatedSound);
 });
+
+export const DELETE: RequestHandler = REST(async ({ params, rest }) => {
+	await rest.requireMemberOfGuild(params.guildId);
+
+	const guildState = await rest.requireGuildState(params.guildId);
+	await guildState.data.deleteSound(params.soundId);
+
+	return new Response();
+});
