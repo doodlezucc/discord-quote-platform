@@ -2,18 +2,25 @@
 	import Button from '$lib/components/Button.svelte';
 	import IconButton from '$lib/components/IconButton.svelte';
 	import Input from '$lib/components/Input.svelte';
-	import type { GuildDataSoundPatch, GuildDataSoundSnippet } from '$lib/snippets';
+	import type {
+		DiscordGuildMemberSnippet,
+		GuildDataSoundPatch,
+		GuildDataSoundSnippet
+	} from '$lib/snippets';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import TrashIcon from '@lucide/svelte/icons/trash';
 	import InlineAudioPlayer from './InlineAudioPlayer.svelte';
 	import KeywordChip from './KeywordChip.svelte';
+	import UserAvatar from './UserAvatar.svelte';
 
 	type Props = GuildDataSoundSnippet & {
+		owner: DiscordGuildMemberSnippet;
 		handlePatch: (patch: GuildDataSoundPatch) => Promise<void>;
 		handleDelete: () => void;
 	};
 
 	let {
+		owner,
 		handlePatch,
 		handleDelete,
 		name = $bindable(),
@@ -98,6 +105,8 @@
 				<div class="expand-icon">
 					<IconButton icon={PencilIcon} stroke onclick={expand}>Edit</IconButton>
 				</div>
+
+				<UserAvatar {...owner} />
 			{/if}
 		</div>
 	</div>
@@ -157,7 +166,7 @@
 
 	.summary {
 		display: grid;
-		grid-template-columns: 1fr minmax(auto, max-content) max-content;
+		grid-template-columns: 1fr minmax(auto, max-content) max-content max-content;
 		padding: 12px;
 	}
 
@@ -176,8 +185,7 @@
 	}
 
 	.expand-icon {
-		padding-left: 16px;
-		padding-right: 4px;
+		padding: 0 8px;
 	}
 
 	.details {

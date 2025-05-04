@@ -5,7 +5,7 @@ import { db } from '../db';
 import * as table from '../db/schema';
 import { GuildState } from './guild-state';
 
-const client = new Client<true>({
+const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
@@ -17,7 +17,7 @@ const client = new Client<true>({
 export class Bot {
 	readonly guildStates = new Map<string, GuildState>();
 
-	constructor() {
+	constructor(readonly client: Client<true>) {
 		this.initialize();
 	}
 
@@ -65,7 +65,7 @@ export const bot = new Promise<Bot>((resolve) => {
 
 		// TODO: Add newly joined guilds to database, remove kicked guilds
 
-		resolve(new Bot());
+		resolve(new Bot(client));
 	});
 });
 

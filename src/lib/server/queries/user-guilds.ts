@@ -1,4 +1,4 @@
-import type { UserGuildSnippet } from '$lib/snippets';
+import type { DiscordGuildMemberSnippet, UserGuildSnippet } from '$lib/snippets';
 import {
 	PermissionFlagsBits,
 	Routes,
@@ -37,24 +37,40 @@ async function convertGuildToSnippet(
 	const guildState = (await bot).guildStates.get(guild.id);
 
 	if (guildState) {
-		const sounds = await db
+		const entries = await db
 			.select()
 			.from(table.sound)
 			.leftJoin(table.asset, eq(table.sound.assetId, table.asset.id))
 			.where(eq(table.sound.guildId, guild.id));
+
+		const relevantUserIds = new Set(entries.map((entry) => entry.asset!.createdBy));
+		const discordGuild = await (await bot).client.guilds.fetch(guild.id);
+
+		const memberSnippets = await Promise.all(
+			relevantUserIds.values().map(async (userId): Promise<DiscordGuildMemberSnippet> => {
+				const guildMember = await discordGuild.members.fetch(userId);
+
+				return {
+					id: userId,
+					displayName: guildMember.displayName,
+					avatarUrl: guildMember.displayAvatarURL()
+				};
+			})
+		);
 
 		return {
 			id: guild.id,
 			name: guild.name,
 			iconId: guild.icon,
 			guildData: {
-				sounds: sounds.map(({ sound, asset }) => ({
+				sounds: entries.map(({ sound, asset }) => ({
 					id: sound.id,
 					name: sound.name,
 					keywords: sound.keywords,
 					mediaPath: server.assetManager.resolveAssetPath(asset!.path),
 					createdBy: asset!.createdBy
-				}))
+				})),
+				members: memberSnippets
 			}
 		};
 	} else if (hasManageServerPermissions(guild)) {

@@ -27,6 +27,10 @@
 
 		guildData!.sounds = guildData!.sounds.filter((someSound) => someSound !== sound);
 	}
+
+	function getMemberSnippet(userId: string) {
+		return guildData!.members.find((snippet) => snippet.id === userId)!;
+	}
 </script>
 
 <div class="guild">
@@ -49,7 +53,7 @@
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					<Button buttonProps={{ tabindex: -1 }}>Add Clipbot</Button>
+					<Button buttonProps={{ tabindex: -1 }}>Invite Clipbot</Button>
 				</a>
 			</div>
 		{/if}
@@ -62,6 +66,7 @@
 					{...sound}
 					bind:name={sound.name}
 					bind:keywords={sound.keywords}
+					owner={getMemberSnippet(sound.createdBy)}
 					handlePatch={(patch) => patchSound(sound, patch)}
 					handleDelete={() => deleteSound(sound)}
 				/>
@@ -120,5 +125,12 @@
 		flex-direction: column;
 		gap: 8px;
 		overflow-y: auto;
+	}
+
+	.guild .actions {
+		display: flex;
+		align-items: center;
+		justify-content: end;
+		padding-top: 0;
 	}
 </style>

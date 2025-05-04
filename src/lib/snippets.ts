@@ -16,6 +16,7 @@ export type GuildDataSoundPatch = Partial<Pick<GuildDataSoundSnippet, 'name' | '
 
 export interface GuildDataSnippet {
 	sounds: GuildDataSoundSnippet[];
+	members: DiscordGuildMemberSnippet[];
 }
 
 export interface UserGuildSnippet {
