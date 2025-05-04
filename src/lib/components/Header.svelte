@@ -25,6 +25,7 @@
 	header {
 		position: sticky;
 		top: 0;
+		z-index: 1;
 		justify-content: space-between;
 		padding: 12px 40px;
 		background-color: scheme.color('background');

@@ -35,7 +35,7 @@
 			ev.preventDefault();
 			isExpanded = !isExpanded;
 			nameInput!.focus();
-			container!.scrollIntoView({ behavior: 'smooth' });
+			container!.scrollIntoView({ behavior: 'smooth', block: 'center' });
 		}
 	}
 
