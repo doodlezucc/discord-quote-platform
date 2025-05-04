@@ -3,29 +3,41 @@
 	import Button from '$lib/components/Button.svelte';
 	import FileButton from '$lib/components/FileButton.svelte';
 	import { rest } from '$lib/rest';
-	import type { GuildDataSoundPatch, GuildDataSoundSnippet, UserGuildSnippet } from '$lib/snippets';
+	import type {
+		GuildDataCommandSnippetPopulated,
+		GuildDataSoundPatch,
+		GuildDataSoundSnippet,
+		UserGuildSnippet
+	} from '$lib/snippets';
 	import Sound from './Sound.svelte';
 
 	type Props = UserGuildSnippet;
 
 	let { id, name, iconId, guildData = $bindable() }: Props = $props();
 
+	let focusedCommand = $state<GuildDataCommandSnippetPopulated>();
+
+	async function createCommand() {
+		const createdCommand = await rest.guildCommandPost(id, 'new-command');
+		guildData!.commands.push(createdCommand);
+	}
+
 	async function createNewSoundFromFile(file: File) {
-		const createdSound = await rest.guildSoundPost(id, file);
-		guildData!.sounds.push(createdSound);
+		const createdSound = await rest.guildCommandSoundPost(id, focusedCommand!.id, file);
+		focusedCommand!.sounds.push(createdSound);
 	}
 
 	async function patchSound(sound: GuildDataSoundSnippet, patch: GuildDataSoundPatch) {
-		const soundIndex = guildData!.sounds.indexOf(sound);
-		const updatedSound = await rest.guildSoundPatch(id, sound.id, patch);
+		const soundIndex = focusedCommand!.sounds.indexOf(sound);
+		const updatedSound = await rest.guildCommandSoundPatch(id, focusedCommand!.id, sound.id, patch);
 
-		guildData!.sounds[soundIndex] = { ...sound, ...updatedSound };
+		focusedCommand!.sounds[soundIndex] = { ...sound, ...updatedSound };
 	}
 
 	async function deleteSound(sound: GuildDataSoundSnippet) {
-		await rest.guildSoundDelete(id, sound.id);
+		await rest.guildCommandSoundDelete(id, focusedCommand!.id, sound.id);
 
-		guildData!.sounds = guildData!.sounds.filter((someSound) => someSound !== sound);
+		focusedCommand!.sounds = focusedCommand!.sounds.filter((someSound) => someSound !== sound);
 	}
 
 	function getMemberSnippet(userId: string) {
@@ -60,22 +72,34 @@
 	</div>
 
 	{#if guildData}
-		<div class="sounds">
-			{#each guildData.sounds as sound (sound.id)}
-				<Sound
-					{...sound}
-					bind:name={sound.name}
-					bind:keywords={sound.keywords}
-					owner={getMemberSnippet(sound.createdBy)}
-					handlePatch={(patch) => patchSound(sound, patch)}
-					handleDelete={() => deleteSound(sound)}
-				/>
-			{/each}
-		</div>
+		{#if !focusedCommand}
+			<div class="sounds">
+				{#each guildData.commands as command (command.id)}
+					<Button outline onclick={() => (focusedCommand = command)}>{command.name}</Button>
+				{/each}
+			</div>
 
-		<div class="actions">
-			<FileButton onPickFile={createNewSoundFromFile}>Add Sound</FileButton>
-		</div>
+			<div class="actions">
+				<Button onclick={createCommand}>Add Command</Button>
+			</div>
+		{:else}
+			<div class="sounds">
+				{#each focusedCommand.sounds as sound (sound.id)}
+					<Sound
+						{...sound}
+						bind:name={sound.name}
+						bind:keywords={sound.keywords}
+						owner={getMemberSnippet(sound.createdBy)}
+						handlePatch={(patch) => patchSound(sound, patch)}
+						handleDelete={() => deleteSound(sound)}
+					/>
+				{/each}
+			</div>
+
+			<div class="actions">
+				<FileButton onPickFile={createNewSoundFromFile}>Add Sound</FileButton>
+			</div>
+		{/if}
 	{/if}
 </div>
 

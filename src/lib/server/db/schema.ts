@@ -4,10 +4,18 @@ export const guild = sqliteTable('guild', {
 	id: text('id').primaryKey()
 });
 
-export const sound = sqliteTable('sound', {
+export const command = sqliteTable('command', {
 	id: text('id').primaryKey(),
 	guildId: text('guild_id')
 		.references(() => guild.id)
+		.notNull(),
+	name: text('name').notNull()
+});
+
+export const sound = sqliteTable('sound', {
+	id: text('id').primaryKey(),
+	commandId: text('command_id')
+		.references(() => command.id)
 		.notNull(),
 	assetId: text('asset_id')
 		.references(() => asset.id, { onDelete: 'cascade' })
@@ -32,6 +40,7 @@ export const session = sqliteTable('session', {
 });
 
 export type Guild = typeof guild.$inferSelect;
+export type Command = typeof command.$inferSelect;
 export type Sound = typeof sound.$inferSelect;
 export type Asset = typeof asset.$inferSelect;
 export type Session = typeof session.$inferSelect;

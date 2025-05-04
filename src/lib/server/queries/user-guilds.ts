@@ -37,11 +37,17 @@ async function convertGuildToSnippet(
 	const guildState = (await bot).guildStates.get(guild.id);
 
 	if (guildState) {
-		const entries = await db
+		const commands = await db
 			.select()
+			.from(table.command)
+			.where(eq(table.command.guildId, guild.id));
+
+		const entries = await db
+			.select({ sound: table.sound, asset: table.asset })
 			.from(table.sound)
 			.leftJoin(table.asset, eq(table.sound.assetId, table.asset.id))
-			.where(eq(table.sound.guildId, guild.id));
+			.leftJoin(table.command, eq(table.sound.commandId, table.command.id))
+			.where(eq(table.command.guildId, guild.id));
 
 		const relevantUserIds = new Set(entries.map((entry) => entry.asset!.createdBy));
 		const discordGuild = await (await bot).client.guilds.fetch(guild.id);
@@ -63,12 +69,18 @@ async function convertGuildToSnippet(
 			name: guild.name,
 			iconId: guild.icon,
 			guildData: {
-				sounds: entries.map(({ sound, asset }) => ({
-					id: sound.id,
-					name: sound.name,
-					keywords: sound.keywords,
-					mediaPath: server.assetManager.resolveAssetPath(asset!.path),
-					createdBy: asset!.createdBy
+				commands: commands.map((command) => ({
+					id: command.id,
+					name: command.name,
+					sounds: entries
+						.filter(({ sound }) => sound.commandId === command.id)
+						.map(({ sound, asset }) => ({
+							id: sound.id,
+							name: sound.name,
+							keywords: sound.keywords,
+							mediaPath: server.assetManager.resolveAssetPath(asset!.path),
+							createdBy: asset!.createdBy
+						}))
 				})),
 				members: memberSnippets
 			}

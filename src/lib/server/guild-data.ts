@@ -1,4 +1,10 @@
-import type { GuildDataSoundPatch, GuildDataSoundSnippet } from '$lib/snippets';
+import type {
+	GuildDataCommandPatch,
+	GuildDataCommandSnippet,
+	GuildDataCommandSnippetPopulated,
+	GuildDataSoundPatch,
+	GuildDataSoundSnippet
+} from '$lib/snippets';
 import { error } from '@sveltejs/kit';
 import { and, eq } from 'drizzle-orm';
 import { server } from '.';
@@ -17,7 +23,8 @@ export class GuildData {
 		const allSounds = await db
 			.select({ assetId: table.asset.id, assetPath: table.asset.path })
 			.from(table.sound)
-			.where(eq(table.sound.guildId, this.guildState.id))
+			.leftJoin(table.command, eq(table.sound.commandId, table.command.id))
+			.where(eq(table.command.guildId, this.guildState.id))
 			.leftJoin(table.asset, eq(table.sound.assetId, table.asset.id));
 
 		await server.assetManager.deleteAssetsInBatch(
@@ -28,13 +35,75 @@ export class GuildData {
 		);
 	}
 
-	async createSound({ userId, name, request }: CreateSoundOptions): Promise<GuildDataSoundSnippet> {
+	async createCommand({ name }: CreateCommandOptions): Promise<GuildDataCommandSnippetPopulated> {
+		const command: table.Command = {
+			id: crypto.randomUUID(),
+			guildId: this.guildState.id,
+			name: name
+		};
+
+		await db.insert(table.command).values(command);
+		return {
+			id: command.id,
+			name: command.name,
+			sounds: []
+		};
+	}
+
+	private async readCommand(id: string) {
+		const [command = undefined] = await db
+			.select()
+			.from(table.command)
+			.where(and(eq(table.command.id, id), eq(table.command.guildId, this.guildState.id)));
+
+		if (!command) {
+			throw error(400, `Invalid command ID ${id}`);
+		}
+
+		return command;
+	}
+
+	async patchCommand({ id, patch }: PatchCommandOptions): Promise<GuildDataCommandSnippet> {
+		const original = await this.readCommand(id);
+
+		await db.update(table.command).set(patch).where(eq(table.command.id, id));
+
+		return {
+			id: original.id,
+			name: original.name,
+			...patch
+		};
+	}
+
+	async deleteCommand({ id }: DeleteCommandOptions) {
+		await this.readCommand(id);
+
+		const sounds = await db
+			.select({ id: table.sound.id })
+			.from(table.sound)
+			.where(eq(table.sound.commandId, table.command));
+
+		if (sounds.length > 0) {
+			throw error(400, `Can't delete command while sounds exist on it`);
+		}
+
+		await db.delete(table.command).where(eq(table.command.id, id));
+	}
+
+	async createSound({
+		userId,
+		commandId,
+		name,
+		request
+	}: CreateSoundOptions): Promise<GuildDataSoundSnippet> {
+		await this.readCommand(commandId);
+
 		const asset = await server.assetManager.uploadAsset(userId, request);
 
 		const sound: table.Sound = {
 			id: crypto.randomUUID(),
 			assetId: asset.id,
-			guildId: this.guildState.id,
+			commandId: commandId,
 			name: name,
 			keywords: ''
 		};
@@ -49,11 +118,12 @@ export class GuildData {
 		};
 	}
 
-	async patchSound({ userId, id, patch }: PatchSoundOptions): Promise<GuildDataSoundSnippet> {
+	private async readSound(id: string, userId: string) {
 		const [original = undefined] = await db
 			.select()
 			.from(table.sound)
-			.where(and(eq(table.sound.id, id), eq(table.sound.guildId, this.guildState.id)))
+			.leftJoin(table.command, eq(table.sound.commandId, table.command.id))
+			.where(and(eq(table.sound.id, id), eq(table.command.guildId, this.guildState.id)))
 			.leftJoin(table.asset, eq(table.sound.assetId, table.asset.id));
 
 		if (!original || !original.asset) {
@@ -64,14 +134,20 @@ export class GuildData {
 			throw error(403, { message: 'Sound is owned by a different user' });
 		}
 
+		return original;
+	}
+
+	async patchSound({ userId, id, patch }: PatchSoundOptions): Promise<GuildDataSoundSnippet> {
+		const original = await this.readSound(id, userId);
+
 		await db.update(table.sound).set(patch).where(eq(table.sound.id, id));
 
 		return {
 			id: original.sound.id,
 			name: original.sound.name,
 			keywords: original.sound.keywords,
-			createdBy: original.asset.createdBy,
-			mediaPath: server.assetManager.resolveAssetPath(original.asset.path),
+			createdBy: original.asset!.createdBy,
+			mediaPath: server.assetManager.resolveAssetPath(original.asset!.path),
 			...patch
 		};
 	}
@@ -84,7 +160,8 @@ export class GuildData {
 				assetOwner: table.asset.createdBy
 			})
 			.from(table.sound)
-			.where(and(eq(table.sound.guildId, this.guildState.id), eq(table.sound.id, id)))
+			.leftJoin(table.command, eq(table.sound.commandId, table.command.id))
+			.where(and(eq(table.command.guildId, this.guildState.id), eq(table.sound.id, id)))
 			.leftJoin(table.asset, eq(table.sound.assetId, table.asset.id));
 
 		if (!entry) {
@@ -99,19 +176,35 @@ export class GuildData {
 	}
 }
 
+interface CreateCommandOptions {
+	name: string;
+}
+
+interface PatchCommandOptions {
+	id: string;
+	patch: GuildDataCommandPatch;
+}
+
+interface DeleteCommandOptions {
+	id: string;
+}
+
 interface CreateSoundOptions {
 	userId: string;
+	commandId: string;
 	name: string;
 	request: Request;
 }
 
 interface PatchSoundOptions {
 	userId: string;
+	commandId: string;
 	id: string;
 	patch: GuildDataSoundPatch;
 }
 
 interface DeleteSoundOptions {
 	userId: string;
+	commandId: string;
 	id: string;
 }

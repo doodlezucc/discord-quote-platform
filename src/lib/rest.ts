@@ -1,4 +1,11 @@
-import type { GuildDataSoundPatch, GuildDataSoundSnippet, UserGuildSnippet } from './snippets';
+import type {
+	GuildDataCommandPatch,
+	GuildDataCommandSnippet,
+	GuildDataCommandSnippetPopulated,
+	GuildDataSoundPatch,
+	GuildDataSoundSnippet,
+	UserGuildSnippet
+} from './snippets';
 
 type HttpMethod = 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT';
 
@@ -45,25 +52,52 @@ class RestCaller {
 		return await this.requestObject<UserGuildSnippet[]>('GET', `/v1/guilds`);
 	}
 
-	async guildSoundPost(guildId: string, file: File) {
-		return await this.requestObject<GuildDataSoundSnippet>('POST', `/v1/guilds/${guildId}/sounds`, {
-			queryParameters: {
-				name: file.name
-			},
-			body: file
-		});
+	async guildCommandPost(guildId: string, name: string) {
+		return await this.requestObject<GuildDataCommandSnippetPopulated>(
+			'POST',
+			`/v1/guilds/${guildId}/commands`,
+			{ queryParameters: { name: name } }
+		);
 	}
 
-	async guildSoundPatch(guildId: string, soundId: string, patch: GuildDataSoundPatch) {
-		return await this.requestObject<GuildDataSoundSnippet>(
+	async guildCommandPatch(guildId: string, commandId: string, patch: GuildDataCommandPatch) {
+		return await this.requestObject<GuildDataCommandSnippet>(
 			'PATCH',
-			`/v1/guilds/${guildId}/sounds/${soundId}`,
+			`/v1/guilds/${guildId}/commands/${commandId}`,
 			{ queryParameters: patch }
 		);
 	}
 
-	async guildSoundDelete(guildId: string, soundId: string) {
-		await this.request('DELETE', `/v1/guilds/${guildId}/sounds/${soundId}`);
+	async guildCommandDelete(guildId: string, commandId: string) {
+		await this.request('DELETE', `/v1/guilds/${guildId}/commands/${commandId}`);
+	}
+
+	async guildCommandSoundPost(guildId: string, commandId: string, file: File) {
+		return await this.requestObject<GuildDataSoundSnippet>(
+			'POST',
+			`/v1/guilds/${guildId}/commands/${commandId}/sounds`,
+			{
+				queryParameters: { name: file.name },
+				body: file
+			}
+		);
+	}
+
+	async guildCommandSoundPatch(
+		guildId: string,
+		commandId: string,
+		soundId: string,
+		patch: GuildDataSoundPatch
+	) {
+		return await this.requestObject<GuildDataSoundSnippet>(
+			'PATCH',
+			`/v1/guilds/${guildId}/commands/${commandId}/sounds/${soundId}`,
+			{ queryParameters: patch }
+		);
+	}
+
+	async guildCommandSoundDelete(guildId: string, commandId: string, soundId: string) {
+		await this.request('DELETE', `/v1/guilds/${guildId}/commands/${commandId}/sounds/${soundId}`);
 	}
 }
 

@@ -4,6 +4,17 @@ export interface DiscordGuildMemberSnippet {
 	avatarUrl: string;
 }
 
+export interface GuildDataCommandSnippet {
+	id: string;
+	name: string;
+}
+
+export interface GuildDataCommandSnippetPopulated extends GuildDataCommandSnippet {
+	sounds: GuildDataSoundSnippet[];
+}
+
+export type GuildDataCommandPatch = Partial<Pick<GuildDataSoundSnippet, 'name'>>;
+
 export interface GuildDataSoundSnippet {
 	id: string;
 	name: string;
@@ -15,7 +26,7 @@ export interface GuildDataSoundSnippet {
 export type GuildDataSoundPatch = Partial<Pick<GuildDataSoundSnippet, 'name' | 'keywords'>>;
 
 export interface GuildDataSnippet {
-	sounds: GuildDataSoundSnippet[];
+	commands: GuildDataCommandSnippetPopulated[];
 	members: DiscordGuildMemberSnippet[];
 }
 
