@@ -2,6 +2,7 @@
 	import type { HTMLInputAttributes } from 'svelte/elements';
 
 	type Props = {
+		name: string;
 		placeholder: string;
 		value: string;
 		onSubmit?: (value: string) => void;
@@ -17,7 +18,15 @@
 		  }
 	);
 
-	let { placeholder, value = $bindable(), onSubmit, readonly, type, multiline }: Props = $props();
+	let {
+		name,
+		placeholder,
+		value = $bindable(),
+		onSubmit,
+		readonly,
+		type,
+		multiline
+	}: Props = $props();
 
 	let element = $state<HTMLInputElement | HTMLTextAreaElement>();
 
@@ -43,6 +52,7 @@
 
 {#if !multiline}
 	<input
+		{name}
 		{placeholder}
 		{type}
 		{readonly}
@@ -54,6 +64,7 @@
 	/>
 {:else}
 	<textarea
+		{name}
 		{placeholder}
 		{readonly}
 		tabindex={readonly ? -1 : undefined}

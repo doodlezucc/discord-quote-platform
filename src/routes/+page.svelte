@@ -26,7 +26,7 @@
 
 <Header>
 	{#snippet trailing()}
-		<span>{data.user.username}</span>
+		<span aria-label="Logged in user">{data.user.username}</span>
 
 		<form method="POST" action="?/logout">
 			<Button buttonProps={{ type: 'submit' }}>Log Out</Button>

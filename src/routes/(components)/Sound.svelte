@@ -28,6 +28,7 @@
 
 	let nameInput = $state<Input>();
 	let container = $state<HTMLElement>();
+	let summary = $state<HTMLElement>();
 
 	function expand(ev: MouseEvent) {
 		if (!isExpanded) {
@@ -59,6 +60,12 @@
 		editingName = name;
 		editingKeywords = keywords;
 		isExpanded = false;
+
+		const documentSelection = document.getSelection();
+
+		if (documentSelection && documentSelection.anchorNode === summary) {
+			documentSelection.empty();
+		}
 	}
 
 	let separateKeywords = $derived(
@@ -66,13 +73,14 @@
 	);
 </script>
 
-<div class="sound" aria-expanded={isExpanded} bind:this={container}>
+<div class="sound" aria-label="Sound" aria-expanded={isExpanded} bind:this={container}>
 	<div class="overview">
 		<InlineAudioPlayer src={mediaPath} />
 
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="summary" onmousedown={expand}>
+		<div class="summary" onmousedown={expand} bind:this={summary}>
 			<Input
+				name="sound-name"
 				placeholder="Name..."
 				type="text"
 				bind:value={editingName}
@@ -80,7 +88,7 @@
 				readonly={!isExpanded}
 			/>
 
-			<div class="keywords">
+			<div class="keywords" role="list" aria-label="Keywords">
 				{#each separateKeywords as keyword}
 					<KeywordChip>{keyword}</KeywordChip>
 				{/each}
@@ -94,8 +102,8 @@
 		</div>
 	</div>
 
-	<div class="details" aria-hidden={!isExpanded}>
-		<Input placeholder="Keywords..." multiline bind:value={editingKeywords} />
+	<div class="details" inert={!isExpanded}>
+		<Input name="sound-keywords" placeholder="Keywords..." multiline bind:value={editingKeywords} />
 
 		<div class="actions">
 			<Button onclick={handleDelete} outline icon={TrashIcon} iconStroke iconColor="primary">
@@ -181,13 +189,12 @@
 		padding-top: 0;
 		transition: 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
 
-		&[aria-hidden='true'] {
+		height: 200px;
+
+		&[inert] {
 			padding-top: 0;
 			padding-bottom: 0;
 			height: 0;
-		}
-		&[aria-hidden='false'] {
-			height: 200px;
 		}
 	}
 

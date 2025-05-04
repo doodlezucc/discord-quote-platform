@@ -8,7 +8,7 @@
 	let { children }: Props = $props();
 </script>
 
-<div>
+<div role="listitem">
 	{@render children()}
 </div>
 
