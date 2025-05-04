@@ -1,4 +1,4 @@
-import type { GuildDataSoundPatch, GuildDataSoundSnippet } from './snippets';
+import type { GuildDataSoundPatch, GuildDataSoundSnippet, UserGuildSnippet } from './snippets';
 
 type HttpMethod = 'DELETE' | 'GET' | 'PATCH' | 'POST' | 'PUT';
 
@@ -39,6 +39,10 @@ class RestCaller {
 		const response = await this.request(method, path, options);
 
 		return (await response.json()) as T;
+	}
+
+	async guildsGet() {
+		return await this.requestObject<UserGuildSnippet[]>('GET', `/v1/guilds`);
 	}
 
 	async guildSoundPost(guildId: string, file: File) {

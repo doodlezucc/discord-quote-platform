@@ -2,12 +2,24 @@
 	import Button from '$lib/components/Button.svelte';
 	import Content from '$lib/components/Content.svelte';
 	import Header from '$lib/components/Header.svelte';
+	import { rest } from '$lib/rest';
+	import type { UserGuildSnippet } from '$lib/snippets';
+	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
 	import Guild from './(components)/Guild.svelte';
 
 	let { data }: { data: PageData } = $props();
 
-	let guilds = $state(data.guilds);
+	let guilds = $state<UserGuildSnippet[]>([]);
+
+	async function fetchGuilds() {
+		guilds = await rest.guildsGet();
+	}
+
+	onMount(() => {
+		fetchGuilds();
+	});
+
 	let botEnabledGuilds = $derived(guilds.filter((guild) => guild.guildData !== undefined));
 	let botDisabledGuilds = $derived(guilds.filter((guild) => guild.guildData === undefined));
 </script>

@@ -1,6 +1,5 @@
 import * as auth from '$lib/server/auth';
 import { revokeDiscordAccessToken } from '$lib/server/discord-oauth2';
-import { fetchUserGuildStates } from '$lib/server/queries/user-guilds';
 import { OAuth2API } from '@discordjs/core';
 import { fail, redirect, type Actions } from '@sveltejs/kit';
 import { REST } from 'discord.js';
@@ -15,11 +14,9 @@ export const load: PageServerLoad = async (event) => {
 	const discordOAuth2Api = new OAuth2API(discordRest);
 
 	const { user } = await discordOAuth2Api.getCurrentAuthorizationInformation();
-	const guilds = await fetchUserGuildStates(discordRest);
 
 	return {
-		user: user!,
-		guilds: guilds
+		user: user!
 	};
 };
 
