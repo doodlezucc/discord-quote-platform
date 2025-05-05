@@ -2,6 +2,7 @@
 	import { PUBLIC_DISCORD_CLIENT_ID } from '$env/static/public';
 	import Button from '$lib/components/Button.svelte';
 	import FileButton from '$lib/components/FileButton.svelte';
+	import Input from '$lib/components/Input.svelte';
 	import { rest } from '$lib/rest';
 	import type {
 		GuildDataCommandSnippetPopulated,
@@ -9,6 +10,8 @@
 		GuildDataSoundSnippet,
 		UserGuildSnippet
 	} from '$lib/snippets';
+	import PlusIcon from '@lucide/svelte/icons/plus';
+	import CommandFolder from './CommandFolder.svelte';
 	import Sound from './Sound.svelte';
 
 	type Props = UserGuildSnippet;
@@ -20,6 +23,12 @@
 	async function createCommand() {
 		const createdCommand = await rest.guildCommandPost(id, 'new-command');
 		guildData!.commands.push(createdCommand);
+	}
+
+	async function deleteCommand(command: GuildDataCommandSnippetPopulated) {
+		await rest.guildCommandDelete(id, command.id);
+
+		guildData!.commands = guildData!.commands.filter((someCommand) => someCommand !== command);
 	}
 
 	async function createNewSoundFromFile(file: File) {
@@ -56,7 +65,21 @@
 		{:else}
 			<div class="icon placeholder"></div>
 		{/if}
-		<b>{name}</b>
+
+		<div class="title">
+			{#if !focusedCommand}
+				<b>{name}</b>
+			{:else}
+				<b>{name}</b>
+				<span>></span>
+				<Input
+					bind:value={focusedCommand.name}
+					name="command-name"
+					placeholder="Command name..."
+					type="text"
+				/>
+			{/if}
+		</div>
 
 		{#if !guildData}
 			<div class="align-right">
@@ -73,17 +96,24 @@
 
 	{#if guildData}
 		{#if !focusedCommand}
-			<div class="sounds">
+			<div class="list commands">
 				{#each guildData.commands as command (command.id)}
-					<Button outline onclick={() => (focusedCommand = command)}>{command.name}</Button>
+					<CommandFolder
+						name={command.name}
+						soundCount={command.sounds.length}
+						onclick={() => (focusedCommand = command)}
+						handleDelete={() => deleteCommand(command)}
+					/>
 				{/each}
-			</div>
 
-			<div class="actions">
-				<Button onclick={createCommand}>Add Command</Button>
+				<Button outline icon={PlusIcon} onclick={createCommand}>Add Command</Button>
 			</div>
 		{:else}
-			<div class="sounds">
+			<div class="list sounds">
+				{#if focusedCommand.sounds.length === 0}
+					<span>Nah...</span>
+				{/if}
+
 				{#each focusedCommand.sounds as sound (sound.id)}
 					<Sound
 						{...sound}
@@ -97,6 +127,7 @@
 			</div>
 
 			<div class="actions">
+				<Button outline onclick={() => (focusedCommand = undefined)}>Back</Button>
 				<FileButton onPickFile={createNewSoundFromFile}>Add Sound</FileButton>
 			</div>
 		{/if}
@@ -124,9 +155,17 @@
 	}
 
 	.header {
-		display: flex;
+		display: grid;
+		grid-template-columns: max-content 1fr max-content;
 		gap: 8px;
 		align-items: center;
+	}
+
+	.title {
+		display: grid;
+		grid-template-columns: auto auto 1fr;
+		align-items: center;
+		gap: 12px;
 	}
 
 	.icon {
@@ -143,18 +182,25 @@
 		margin-left: auto;
 	}
 
-	.sounds {
+	.list {
 		border-top: 1px solid scheme.color('separator');
+		gap: 8px;
+	}
+
+	.commands {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+	}
+
+	.sounds {
 		display: flex;
 		flex-direction: column;
-		gap: 8px;
-		overflow-y: auto;
 	}
 
 	.guild .actions {
 		display: flex;
 		align-items: center;
-		justify-content: end;
+		justify-content: space-between;
 		padding-top: 0;
 	}
 </style>

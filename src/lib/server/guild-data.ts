@@ -81,7 +81,7 @@ export class GuildData {
 		const sounds = await db
 			.select({ id: table.sound.id })
 			.from(table.sound)
-			.where(eq(table.sound.commandId, table.command));
+			.where(eq(table.sound.commandId, id));
 
 		if (sounds.length > 0) {
 			throw error(400, `Can't delete command while sounds exist on it`);

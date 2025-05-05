@@ -46,8 +46,11 @@
 		@extend %button;
 	}
 
-	span[data-color='primary'] {
+	span {
 		display: flex;
+	}
+
+	span[data-color='primary'] {
 		color: scheme.color('primary');
 	}
 </style>
