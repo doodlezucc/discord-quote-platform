@@ -1,4 +1,4 @@
-import { fetchUserGuildStates } from '$lib/server/queries/user-guilds';
+import { fetchUserGuildStates } from '$lib/server/queries/fetch-user-guilds';
 import { REST } from '$lib/server/rest';
 import { json } from '@sveltejs/kit';
 import { REST as DiscordRest } from 'discord.js';
