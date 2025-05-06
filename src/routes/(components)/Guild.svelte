@@ -2,7 +2,6 @@
 	import { PUBLIC_DISCORD_CLIENT_ID } from '$env/static/public';
 	import Button from '$lib/components/Button.svelte';
 	import FileButton from '$lib/components/FileButton.svelte';
-	import Input from '$lib/components/Input.svelte';
 	import { rest } from '$lib/rest';
 	import type {
 		GuildDataCommandSnippetPopulated,
@@ -72,12 +71,7 @@
 			{:else}
 				<b>{name}</b>
 				<span>></span>
-				<Input
-					bind:value={focusedCommand.name}
-					name="command-name"
-					placeholder="Command name..."
-					type="text"
-				/>
+				<b>{focusedCommand.name}</b>
 			{/if}
 		</div>
 

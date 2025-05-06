@@ -3,10 +3,14 @@ import * as table from '$lib/server/db/schema';
 import { OAuth2API } from '@discordjs/core';
 import { sha256 } from '@oslojs/crypto/sha2';
 import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
-import type { RequestEvent } from '@sveltejs/kit';
+import { fail, redirect, type RequestEvent } from '@sveltejs/kit';
 import { REST } from 'discord.js';
 import { eq } from 'drizzle-orm';
-import { exchangeDiscordAccessToken, refreshDiscordAccessToken } from './discord-oauth2';
+import {
+	exchangeDiscordAccessToken,
+	refreshDiscordAccessToken,
+	revokeDiscordAccessToken
+} from './discord-oauth2';
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
@@ -92,4 +96,16 @@ export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.delete(sessionCookieName, {
 		path: '/'
 	});
+}
+
+export async function actionLogout(event: RequestEvent) {
+	if (!event.locals.session) {
+		return fail(401);
+	}
+
+	await invalidateSession(event.locals.session.id);
+	await revokeDiscordAccessToken(event.locals.session.accessToken);
+	deleteSessionTokenCookie(event);
+
+	return redirect(303, '/login');
 }

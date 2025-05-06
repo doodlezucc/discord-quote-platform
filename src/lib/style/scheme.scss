@@ -46,11 +46,11 @@ $centered-shade: 5;
 	@include define-hue('primary', hsl(355, 81%, 58%));
 	@include define-hue('secondary', hsl(263, 100%, 64%));
 
-	@include define-color('text-dark', #1b1b1b);
+	@include define-color('text-dark', #111111);
 	@include define-color('text-light', #e0e0e0);
 
 	@include define-color('shade-1', #252525);
-	@include define-color('shade-2', #333333);
+	@include define-color('shade-2', #2c2c2c);
 	@include define-color('shade-3', #4d4d4d);
 	@include define-color('shade-4', #a0a0a0);
 

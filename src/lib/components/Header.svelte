@@ -1,20 +1,26 @@
 <script lang="ts">
 	import { base } from '$app/paths';
-	import type { Snippet } from 'svelte';
+	import Button from './Button.svelte';
 
 	interface Props {
-		trailing?: Snippet;
+		userInfo?: {
+			username: string;
+		};
 	}
 
-	let { trailing }: Props = $props();
+	let { userInfo }: Props = $props();
 </script>
 
 <header>
 	<a href="{base}/"><h1>Clipbot</h1></a>
 
-	{#if trailing}
+	{#if userInfo}
 		<div class="trailing">
-			{@render trailing()}
+			<span aria-label="Logged in user">{userInfo.username}</span>
+
+			<form method="POST" action="?/logout">
+				<Button buttonProps={{ type: 'submit' }}>Log Out</Button>
+			</form>
 		</div>
 	{/if}
 </header>

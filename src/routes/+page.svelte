@@ -1,5 +1,4 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
 	import Content from '$lib/components/Content.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { rest } from '$lib/rest';
@@ -24,15 +23,7 @@
 	let botDisabledGuilds = $derived(guilds.filter((guild) => guild.guildData === undefined));
 </script>
 
-<Header>
-	{#snippet trailing()}
-		<span aria-label="Logged in user">{data.user.username}</span>
-
-		<form method="POST" action="?/logout">
-			<Button buttonProps={{ type: 'submit' }}>Log Out</Button>
-		</form>
-	{/snippet}
-</Header>
+<Header userInfo={{ username: data.username }} />
 
 <Content>
 	{#if botEnabledGuilds.length > 0}
