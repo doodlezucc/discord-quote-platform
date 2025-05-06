@@ -23,6 +23,5 @@
 		font-size: 14px;
 		padding: 1px 10px;
 		border-radius: 100vw;
-		pointer-events: none;
 	}
 </style>

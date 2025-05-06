@@ -31,6 +31,7 @@
 	input {
 		position: absolute;
 		opacity: 0;
+		width: 0;
 		pointer-events: none;
 	}
 

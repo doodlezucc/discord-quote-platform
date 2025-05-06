@@ -1,4 +1,4 @@
-import type { DiscordGuildMemberSnippet, UserGuildSnippet } from '$lib/snippets';
+import type { UserGuildSnippet } from '$lib/snippets';
 import {
 	PermissionFlagsBits,
 	Routes,
@@ -6,8 +6,7 @@ import {
 	type RESTAPIPartialCurrentUserGuild,
 	type RESTGetAPICurrentUserGuildsResult
 } from 'discord.js';
-import { eq } from 'drizzle-orm';
-import { server } from '..';
+import { count, eq } from 'drizzle-orm';
 import { bot } from '../bot';
 import { db } from '../db';
 import * as table from '../db/schema';
@@ -38,51 +37,22 @@ async function convertGuildToSnippet(
 
 	if (guildState) {
 		const commands = await db
-			.select()
+			.select({ command: table.command, soundCount: count(table.sound.id) })
 			.from(table.command)
-			.where(eq(table.command.guildId, guild.id));
-
-		const entries = await db
-			.select({ sound: table.sound, asset: table.asset })
-			.from(table.sound)
-			.leftJoin(table.asset, eq(table.sound.assetId, table.asset.id))
-			.leftJoin(table.command, eq(table.sound.commandId, table.command.id))
-			.where(eq(table.command.guildId, guild.id));
-
-		const relevantUserIds = new Set(entries.map((entry) => entry.asset!.createdBy));
-		const discordGuild = await (await bot).client.guilds.fetch(guild.id);
-
-		const memberSnippets = await Promise.all(
-			relevantUserIds.values().map(async (userId): Promise<DiscordGuildMemberSnippet> => {
-				const guildMember = await discordGuild.members.fetch(userId);
-
-				return {
-					id: userId,
-					displayName: guildMember.displayName,
-					avatarUrl: guildMember.displayAvatarURL()
-				};
-			})
-		);
+			.where(eq(table.command.guildId, guild.id))
+			.leftJoin(table.sound, eq(table.sound.commandId, table.command.id))
+			.groupBy(table.command.id);
 
 		return {
 			id: guild.id,
 			name: guild.name,
 			iconId: guild.icon,
 			guildData: {
-				commands: commands.map((command) => ({
+				commands: commands.map(({ command, soundCount }) => ({
 					id: command.id,
 					name: command.name,
-					sounds: entries
-						.filter(({ sound }) => sound.commandId === command.id)
-						.map(({ sound, asset }) => ({
-							id: sound.id,
-							name: sound.name,
-							keywords: sound.keywords,
-							mediaPath: server.assetManager.resolveAssetPath(asset!.path),
-							createdBy: asset!.createdBy
-						}))
-				})),
-				members: memberSnippets
+					soundCount: soundCount
+				}))
 			}
 		};
 	} else if (hasManageServerPermissions(guild)) {

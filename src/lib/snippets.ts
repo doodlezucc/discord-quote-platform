@@ -13,6 +13,10 @@ export interface GuildDataCommandSnippetPopulated extends GuildDataCommandSnippe
 	sounds: GuildDataSoundSnippet[];
 }
 
+export interface GuildDataCommandSnippetWithSoundCount extends GuildDataCommandSnippet {
+	soundCount: number;
+}
+
 export type GuildDataCommandPatch = Partial<Pick<GuildDataSoundSnippet, 'name'>>;
 
 export interface GuildDataSoundSnippet {
@@ -23,11 +27,18 @@ export interface GuildDataSoundSnippet {
 	createdBy: string;
 }
 
+export interface GuildDataSoundSnippetWithOwner {
+	id: string;
+	name: string;
+	keywords: string;
+	mediaPath: string;
+	createdBy: DiscordGuildMemberSnippet;
+}
+
 export type GuildDataSoundPatch = Partial<Pick<GuildDataSoundSnippet, 'name' | 'keywords'>>;
 
 export interface GuildDataSnippet {
-	commands: GuildDataCommandSnippetPopulated[];
-	members: DiscordGuildMemberSnippet[];
+	commands: GuildDataCommandSnippetWithSoundCount[];
 }
 
 export interface UserGuildSnippet {
@@ -35,4 +46,8 @@ export interface UserGuildSnippet {
 	name: string;
 	iconId: string | null;
 	guildData?: GuildDataSnippet;
+}
+
+export interface CommandPageSnippet {
+	members: DiscordGuildMemberSnippet[];
 }

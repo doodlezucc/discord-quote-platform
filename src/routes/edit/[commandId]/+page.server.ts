@@ -2,6 +2,7 @@ import { actionLogout } from '$lib/server/auth';
 import { bot } from '$lib/server/bot';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
+import { fetchSoundSnippets } from '$lib/server/queries/fetch-command-sounds';
 import type { DiscordGuildMemberSnippet } from '$lib/snippets';
 import type { Actions } from '@sveltejs/kit';
 import { error, redirect } from '@sveltejs/kit';
@@ -33,18 +34,20 @@ export const load: PageServerLoad = async ({ locals: { session }, params }) => {
 		throw error(403, { message: 'No access' });
 	}
 
+	const soundSnippets = await fetchSoundSnippets(guild.id, command.id);
+
 	return {
+		user: {
+			id: guildMember.user.id,
+			displayName: guildMember.user.username,
+			avatarUrl: guildMember.displayAvatarURL()
+		} as DiscordGuildMemberSnippet,
 		command: {
 			id: command.id,
 			name: command.name,
 			guildId: command.guildId
 		},
-		username: guildMember.user.displayName,
-		guildMember: {
-			id: guildMember.id,
-			avatarUrl: guildMember.displayAvatarURL(),
-			displayName: guildMember.displayName
-		} as DiscordGuildMemberSnippet
+		sounds: soundSnippets
 	};
 };
 

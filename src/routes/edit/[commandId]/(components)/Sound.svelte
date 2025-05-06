@@ -1,26 +1,21 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
+	import Chip from '$lib/components/Chip.svelte';
 	import IconButton from '$lib/components/IconButton.svelte';
 	import Input from '$lib/components/Input.svelte';
-	import type {
-		DiscordGuildMemberSnippet,
-		GuildDataSoundPatch,
-		GuildDataSoundSnippet
-	} from '$lib/snippets';
+	import type { GuildDataSoundPatch, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import TrashIcon from '@lucide/svelte/icons/trash';
 	import InlineAudioPlayer from './InlineAudioPlayer.svelte';
-	import KeywordChip from './KeywordChip.svelte';
 	import UserAvatar from './UserAvatar.svelte';
 
-	type Props = GuildDataSoundSnippet & {
-		owner: DiscordGuildMemberSnippet;
+	type Props = GuildDataSoundSnippetWithOwner & {
 		handlePatch: (patch: GuildDataSoundPatch) => Promise<void>;
 		handleDelete: () => void;
 	};
 
 	let {
-		owner,
+		createdBy,
 		handlePatch,
 		handleDelete,
 		name = $bindable(),
@@ -97,7 +92,7 @@
 
 			<div class="keywords" role="list" aria-label="Keywords">
 				{#each separateKeywords as keyword}
-					<KeywordChip>{keyword}</KeywordChip>
+					<Chip>{keyword}</Chip>
 				{/each}
 			</div>
 
@@ -106,7 +101,7 @@
 					<IconButton icon={PencilIcon} stroke onclick={expand}>Edit</IconButton>
 				</div>
 
-				<UserAvatar {...owner} />
+				<UserAvatar {...createdBy} />
 			{/if}
 		</div>
 	</div>
