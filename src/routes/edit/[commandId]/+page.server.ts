@@ -45,7 +45,8 @@ export const load: PageServerLoad = async ({ locals: { session }, params }) => {
 		command: {
 			id: command.id,
 			name: command.name,
-			guildId: command.guildId
+			guildId: command.guildId,
+			guildName: guild.name
 		},
 		sounds: soundSnippets
 	};

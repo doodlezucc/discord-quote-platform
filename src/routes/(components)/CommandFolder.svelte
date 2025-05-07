@@ -27,5 +27,13 @@
 		grid-template-columns: 1fr max-content max-content;
 		text-align: start;
 		padding-right: 8px;
+		text-decoration: none;
+
+		&:hover,
+		&:focus-visible {
+			span {
+				text-decoration: underline;
+			}
+		}
 	}
 </style>

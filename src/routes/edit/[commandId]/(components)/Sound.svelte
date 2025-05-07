@@ -47,12 +47,15 @@
 		isSaving = true;
 
 		try {
+			isExpanded = false;
+
 			await handlePatch({
 				name: editingName,
 				keywords: editingKeywords
 			});
-
-			isExpanded = false;
+		} catch (err) {
+			isExpanded = true;
+			throw err;
 		} finally {
 			isSaving = false;
 		}
@@ -127,6 +130,7 @@
 		display: flex;
 		flex-direction: column;
 		background-color: scheme.color('background');
+		border: 1px solid scheme.color('separator');
 		border-radius: 12px;
 
 		&[aria-expanded='false'] {
@@ -144,6 +148,7 @@
 		}
 
 		&[aria-expanded='true'] {
+			border-color: transparent;
 			outline: 2px dashed scheme.color('shade-4');
 
 			.expand-icon {

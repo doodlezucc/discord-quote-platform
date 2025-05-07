@@ -1,9 +1,12 @@
 <script lang="ts">
+	import Button from '$lib/components/Button.svelte';
 	import Content from '$lib/components/Content.svelte';
 	import FileButton from '$lib/components/FileButton.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { rest } from '$lib/rest';
 	import type { GuildDataSoundPatch, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
+	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
+	import { Tether } from 'svelte-tether';
 	import type { PageData } from './$types';
 	import Sound from './(components)/Sound.svelte';
 
@@ -27,20 +30,38 @@
 	}
 
 	async function deleteSound(sound: GuildDataSoundSnippetWithOwner) {
-		await rest.guildCommandSoundDelete(guildId, commandId, sound.id);
+		const soundIndex = sounds.indexOf(sound);
+		sounds.splice(soundIndex, 1);
 
-		sounds = sounds.filter((someSound) => someSound !== sound);
+		try {
+			await rest.guildCommandSoundDelete(guildId, commandId, sound.id);
+		} catch (err) {
+			// Re-insert sound
+			sounds.splice(soundIndex, 0, sound);
+			throw err;
+		}
 	}
 </script>
 
 <Header userInfo={{ username: data.user.displayName }} />
 
 <Content>
-	<h1>{data.command.name}</h1>
+	<Tether origin="center-left">
+		{#snippet portal()}
+			<a class="back-button" href="/">
+				<Button icon={ArrowLeftIcon} iconStroke outline buttonProps={{ tabindex: -1 }}>Back</Button>
+			</a>
+		{/snippet}
+
+		<div class="title">
+			<h2>{data.command.name}</h2>
+			<p>A sound command in {data.command.guildName}</p>
+		</div>
+	</Tether>
 
 	<div class="sounds">
 		{#if sounds.length === 0}
-			<span>Nah...</span>
+			<p>No sounds have been added yet.</p>
 		{/if}
 
 		{#each sounds as sound (sound.id)}
@@ -60,9 +81,40 @@
 </Content>
 
 <style lang="scss">
+	.back-button {
+		margin: 40px;
+		pointer-events: all;
+	}
+
 	.actions {
 		display: flex;
 		justify-content: end;
 		padding-top: 0;
+	}
+
+	.title {
+		margin-top: 0.67em;
+		margin-bottom: 1em;
+		padding-bottom: 0.67em;
+	}
+
+	h2 {
+		margin: 0;
+	}
+
+	.title p {
+		line-height: 1;
+		margin: 0;
+	}
+
+	.sounds {
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.actions {
+		margin-top: 8px;
 	}
 </style>
