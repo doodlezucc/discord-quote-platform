@@ -84,6 +84,7 @@
 		font: inherit;
 		border: none;
 		background-color: transparent;
+		color: inherit;
 	}
 
 	input {

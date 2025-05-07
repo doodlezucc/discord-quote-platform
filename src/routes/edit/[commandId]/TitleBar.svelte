@@ -146,7 +146,7 @@
 	h2 {
 		margin: 0;
 		line-height: 1;
-		margin-top: 0.2em;
+		margin-top: 0.5em;
 	}
 
 	.title-actions {
