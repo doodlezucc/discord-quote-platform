@@ -73,11 +73,18 @@ class RestCaller {
 	}
 
 	async guildCommandSoundPost(guildId: string, commandId: string, file: File) {
+		let fileName = file.name;
+		const fileNameExtensionIndex = fileName.lastIndexOf('.');
+
+		if (fileNameExtensionIndex > 0) {
+			fileName = fileName.slice(0, fileNameExtensionIndex);
+		}
+
 		return await this.requestObject<GuildDataSoundSnippet>(
 			'POST',
 			`/v1/guilds/${guildId}/commands/${commandId}/sounds`,
 			{
-				queryParameters: { name: file.name },
+				queryParameters: { name: fileName },
 				body: file
 			}
 		);

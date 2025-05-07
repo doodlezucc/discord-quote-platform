@@ -37,9 +37,10 @@ export const load: PageServerLoad = async ({ locals: { session }, params }) => {
 	const soundSnippets = await fetchSoundSnippets(guild.id, command.id);
 
 	return {
-		user: {
+		username: guildMember.user.username,
+		member: {
 			id: guildMember.user.id,
-			displayName: guildMember.user.username,
+			displayName: guildMember.displayName,
 			avatarUrl: guildMember.displayAvatarURL()
 		} as DiscordGuildMemberSnippet,
 		command: {

@@ -21,7 +21,7 @@
 
 	async function createNewSoundFromFile(file: File) {
 		const createdSound = await rest.guildCommandSoundPost(guildId, commandId, file);
-		sounds.push({ ...createdSound, createdBy: data.user });
+		sounds.push({ ...createdSound, createdBy: data.member });
 	}
 
 	async function patchSound(sound: GuildDataSoundSnippetWithOwner, patch: GuildDataSoundPatch) {
@@ -45,7 +45,11 @@
 	}
 </script>
 
-<Header userInfo={{ username: data.user.displayName }} />
+<svelte:head>
+	<title>Edit {data.command.name} sounds</title>
+</svelte:head>
+
+<Header userInfo={{ username: data.username }} />
 
 <Content>
 	<div class="title">
