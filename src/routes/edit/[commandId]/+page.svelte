@@ -68,6 +68,7 @@
 	<TitleBar
 		bind:title={commandName}
 		guildName={data.command.guildName}
+		soundCount={sounds.length}
 		handleSave={patchCommand}
 		handleDelete={deleteCommand}
 	/>

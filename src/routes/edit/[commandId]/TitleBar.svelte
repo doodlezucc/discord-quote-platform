@@ -3,6 +3,7 @@
 	import Button from '$lib/components/Button.svelte';
 	import { useErrorDialogs } from '$lib/components/ErrorDialogWrapper.svelte';
 	import Input from '$lib/components/Input.svelte';
+	import Tooltip from '$lib/components/Tooltip.svelte';
 	import type { GuildDataCommandPatch } from '$lib/snippets';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
@@ -11,11 +12,12 @@
 	interface Props {
 		title: string;
 		guildName: string;
+		soundCount: number;
 		handleSave: (patch: GuildDataCommandPatch) => Promise<void>;
 		handleDelete: () => Promise<void>;
 	}
 
-	let { title = $bindable(), guildName, handleSave, handleDelete }: Props = $props();
+	let { title = $bindable(), guildName, soundCount, handleSave, handleDelete }: Props = $props();
 
 	let isEditingTitle = $state(false);
 	let editingTitle = $state(title);
@@ -55,6 +57,8 @@
 			isDeleting = false;
 		}
 	}
+
+	let canDelete = $derived(soundCount === 0 && !isDeleting);
 </script>
 
 <div class="title" class:editing={isEditingTitle}>
@@ -80,16 +84,23 @@
 		{#if !isEditingTitle}
 			<Button icon={SettingsIcon} iconStroke outline onclick={onClickEdit}>Edit Command</Button>
 		{:else}
-			<Button
-				icon={TrashIcon}
-				iconStroke
-				iconColor="primary"
-				outline
-				onclick={deleteCommand}
-				disabled={isDeleting}
+			<Tooltip
+				tooltip={soundCount > 0
+					? 'All sounds must be deleted before removing a command.'
+					: undefined}
 			>
-				Remove from Server
-			</Button>
+				<Button
+					icon={TrashIcon}
+					iconStroke
+					iconColor="primary"
+					outline
+					onclick={deleteCommand}
+					disabled={!canDelete}
+				>
+					Remove from Server
+				</Button>
+			</Tooltip>
+
 			<Button outline onclick={discardEdits}>Cancel</Button>
 			<Button onclick={onClickSaveEdit}>Save</Button>
 		{/if}

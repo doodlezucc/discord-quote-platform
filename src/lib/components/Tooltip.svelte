@@ -6,7 +6,7 @@
 		keepVisible?: boolean;
 		alignment?: Alignment;
 		children: Snippet;
-		tooltip: Snippet;
+		tooltip?: string | Snippet;
 	}
 
 	let { keepVisible = false, alignment = 'top-center', children, tooltip }: Props = $props();
@@ -29,15 +29,23 @@
 	});
 </script>
 
-<Tether origin={alignment} bind:wrappedElement>
-	{@render children()}
+{#if tooltip}
+	<Tether origin={alignment} bind:wrappedElement>
+		{@render children()}
 
-	{#snippet portal()}
-		<div aria-hidden="true" role="tooltip" id={tooltipId} class:show={keepVisible}>
-			{@render tooltip()}
-		</div>
-	{/snippet}
-</Tether>
+		{#snippet portal()}
+			<div aria-hidden="true" role="tooltip" id={tooltipId} class:show={keepVisible}>
+				{#if typeof tooltip === 'string'}
+					{tooltip}
+				{:else}
+					{@render tooltip()}
+				{/if}
+			</div>
+		{/snippet}
+	</Tether>
+{:else}
+	{@render children()}
+{/if}
 
 <!--
     The CSS selector here selects the tooltip element, if the wrapped element
@@ -71,8 +79,8 @@
 		font-size: 0.8rem;
 		text-align: center;
 		width: max-content;
-		max-width: 200px;
+		max-width: 300px;
 
-		box-shadow: 0 2px 6px #0003;
+		box-shadow: 0 2px 4px #000a;
 	}
 </style>
