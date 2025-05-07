@@ -135,6 +135,7 @@
 		background-color: scheme.color('background');
 		border: 1px solid scheme.color('separator');
 		border-radius: 12px;
+		transition: background-color 0.2s;
 
 		&[aria-expanded='false'] {
 			.summary {
@@ -147,6 +148,7 @@
 
 			&:has(.summary:hover) {
 				background-color: scheme.color('shade-1');
+				transition-duration: 0.1s;
 			}
 		}
 

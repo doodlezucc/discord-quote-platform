@@ -7,7 +7,6 @@
 	import { rest } from '$lib/rest';
 	import type { GuildDataSoundPatch, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
-	import { Tether } from 'svelte-tether';
 	import type { PageData } from './$types';
 	import Sound from './Sound.svelte';
 
@@ -34,13 +33,13 @@
 
 	async function deleteSound(sound: GuildDataSoundSnippetWithOwner) {
 		const soundIndex = sounds.indexOf(sound);
-		sounds.splice(soundIndex, 1);
+		sounds = sounds.toSpliced(soundIndex, 1);
 
 		try {
 			await rest.guildCommandSoundDelete(guildId, commandId, sound.id);
 		} catch (err) {
 			// Re-insert sound
-			sounds.splice(soundIndex, 0, sound);
+			sounds = sounds.toSpliced(soundIndex, 0, sound);
 			showErrorDialog({ message: `Failed to upload sound. ${err}` });
 		}
 	}
@@ -49,24 +48,16 @@
 <Header userInfo={{ username: data.user.displayName }} />
 
 <Content>
-	<Tether origin="center-left">
-		{#snippet portal()}
-			<a class="back-button" href="/">
-				<Button icon={ArrowLeftIcon} iconStroke outline buttonProps={{ tabindex: -1 }}>Back</Button>
-			</a>
-		{/snippet}
+	<div class="title">
+		<a class="back-button" href="/">
+			<Button icon={ArrowLeftIcon} iconStroke outline buttonProps={{ tabindex: -1 }}>Guilds</Button>
+		</a>
 
-		<div class="title">
-			<h2>{data.command.name}</h2>
-			<p>A sound command in {data.command.guildName}</p>
-		</div>
-	</Tether>
+		<h2>{data.command.name}</h2>
+		<p>A sound command in {data.command.guildName}</p>
+	</div>
 
 	<div class="sounds">
-		{#if sounds.length === 0}
-			<p>No sounds have been added yet.</p>
-		{/if}
-
 		{#each sounds as sound (sound.id)}
 			<Sound
 				{...sound}
@@ -75,6 +66,8 @@
 				handlePatch={(patch) => patchSound(sound, patch)}
 				handleDelete={() => deleteSound(sound)}
 			/>
+		{:else}
+			<p class="empty-note">No sounds have been added yet.</p>
 		{/each}
 	</div>
 
@@ -84,13 +77,10 @@
 </Content>
 
 <style lang="scss">
+	@use '$lib/style/scheme';
+
 	a {
 		color: inherit;
-	}
-
-	.back-button {
-		margin: 40px;
-		pointer-events: all;
 	}
 
 	.actions {
@@ -100,9 +90,14 @@
 	}
 
 	.title {
-		margin-top: 0.67em;
-		margin-bottom: 1em;
-		padding-bottom: 0.67em;
+		position: relative;
+		margin: 0.67em 0;
+	}
+
+	.back-button {
+		position: absolute;
+		right: 100%;
+		margin: 0.9em 40px;
 	}
 
 	h2 {
@@ -115,13 +110,21 @@
 	}
 
 	.sounds {
-		text-align: center;
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
+		margin: 1em 0;
 	}
 
 	.actions {
 		margin-top: 8px;
+	}
+
+	.sounds .empty-note {
+		text-align: center;
+		padding: 8px;
+		border: 2px dashed scheme.color('separator');
+		border-radius: 8px;
+		margin: 0;
 	}
 </style>
