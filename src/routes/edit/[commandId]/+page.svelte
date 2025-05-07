@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
 	import Content from '$lib/components/Content.svelte';
+	import { useErrorDialogs } from '$lib/components/ErrorDialogWrapper.svelte';
 	import FileButton from '$lib/components/FileButton.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { rest } from '$lib/rest';
@@ -16,6 +17,8 @@
 	let commandId = $derived(data.command.id);
 
 	let sounds = $state(data.sounds);
+
+	const { showErrorDialog } = useErrorDialogs();
 
 	async function createNewSoundFromFile(file: File) {
 		const createdSound = await rest.guildCommandSoundPost(guildId, commandId, file);
@@ -38,7 +41,7 @@
 		} catch (err) {
 			// Re-insert sound
 			sounds.splice(soundIndex, 0, sound);
-			throw err;
+			showErrorDialog({ message: `Failed to upload sound. ${err}` });
 		}
 	}
 </script>
@@ -81,6 +84,10 @@
 </Content>
 
 <style lang="scss">
+	a {
+		color: inherit;
+	}
+
 	.back-button {
 		margin: 40px;
 		pointer-events: all;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import ErrorDialogWrapper from '$lib/components/ErrorDialogWrapper.svelte';
 	import '$lib/style/index.scss';
 	import '@fontsource-variable/public-sans';
 	import type { Snippet } from 'svelte';
@@ -12,5 +13,7 @@
 </script>
 
 <PortalOverlay>
-	{@render children()}
+	<ErrorDialogWrapper>
+		{@render children()}
+	</ErrorDialogWrapper>
 </PortalOverlay>

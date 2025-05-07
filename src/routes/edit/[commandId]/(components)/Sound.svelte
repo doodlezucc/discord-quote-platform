@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Button from '$lib/components/Button.svelte';
 	import Chip from '$lib/components/Chip.svelte';
+	import { useErrorDialogs } from '$lib/components/ErrorDialogWrapper.svelte';
 	import IconButton from '$lib/components/IconButton.svelte';
 	import Input from '$lib/components/Input.svelte';
 	import type { GuildDataSoundPatch, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
@@ -32,6 +33,8 @@
 	let container = $state<HTMLElement>();
 	let summary = $state<HTMLElement>();
 
+	const { showErrorDialog } = useErrorDialogs();
+
 	function expand(ev: MouseEvent) {
 		if (!isExpanded) {
 			ev.preventDefault();
@@ -55,7 +58,7 @@
 			});
 		} catch (err) {
 			isExpanded = true;
-			throw err;
+			showErrorDialog({ message: `Failed to save changes. ${err}` });
 		} finally {
 			isSaving = false;
 		}
