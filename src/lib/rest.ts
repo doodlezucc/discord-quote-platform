@@ -35,7 +35,7 @@ class RestCaller {
 		});
 
 		if (!response.ok) {
-			const responseText = response.text();
+			const responseText = await response.text();
 			throw new Error(`Error during REST call (${path}): ${responseText}`);
 		}
 

@@ -1,6 +1,9 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import Button from '$lib/components/Button.svelte';
+	import { useErrorDialogs } from '$lib/components/ErrorDialogWrapper.svelte';
 	import Input from '$lib/components/Input.svelte';
+	import type { GuildDataCommandPatch } from '$lib/snippets';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import TrashIcon from '@lucide/svelte/icons/trash';
@@ -8,21 +11,31 @@
 	interface Props {
 		title: string;
 		guildName: string;
+		handleSave: (patch: GuildDataCommandPatch) => Promise<void>;
+		handleDelete: () => Promise<void>;
 	}
 
-	let { title = $bindable(), guildName }: Props = $props();
+	let { title = $bindable(), guildName, handleSave, handleDelete }: Props = $props();
 
 	let isEditingTitle = $state(false);
 	let editingTitle = $state(title);
 	let titleInput = $state<Input>();
+
+	const { showErrorDialog } = useErrorDialogs();
 
 	function onClickEdit() {
 		isEditingTitle = true;
 		titleInput!.focus();
 	}
 
-	function onClickSaveEdit() {
-		isEditingTitle = false;
+	async function onClickSaveEdit() {
+		try {
+			isEditingTitle = false;
+			await handleSave({ name: editingTitle });
+		} catch (err) {
+			isEditingTitle = true;
+			showErrorDialog({ message: `Failed to save changes. ${err}` });
+		}
 	}
 
 	function discardEdits() {
@@ -30,8 +43,17 @@
 		editingTitle = title;
 	}
 
-	function deleteCommand() {
-		isEditingTitle = false;
+	let isDeleting = $state(false);
+	async function deleteCommand() {
+		isDeleting = true;
+		try {
+			await handleDelete();
+			await goto('/');
+		} catch (err) {
+			showErrorDialog({ message: `Failed to delete command. ${err}` });
+		} finally {
+			isDeleting = false;
+		}
 	}
 </script>
 
@@ -58,7 +80,14 @@
 		{#if !isEditingTitle}
 			<Button icon={SettingsIcon} iconStroke outline onclick={onClickEdit}>Edit Command</Button>
 		{:else}
-			<Button icon={TrashIcon} iconStroke iconColor="primary" outline onclick={deleteCommand}>
+			<Button
+				icon={TrashIcon}
+				iconStroke
+				iconColor="primary"
+				outline
+				onclick={deleteCommand}
+				disabled={isDeleting}
+			>
 				Remove from Server
 			</Button>
 			<Button outline onclick={discardEdits}>Cancel</Button>

@@ -63,6 +63,7 @@
 		border-radius: 24px;
 		margin: auto;
 		min-width: 400px;
+		max-width: max(400px, 50vw);
 
 		> * {
 			padding: 12px 24px;

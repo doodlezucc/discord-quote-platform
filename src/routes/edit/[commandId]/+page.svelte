@@ -4,7 +4,11 @@
 	import FileButton from '$lib/components/FileButton.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { rest } from '$lib/rest';
-	import type { GuildDataSoundPatch, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
+	import type {
+		GuildDataCommandPatch,
+		GuildDataSoundPatch,
+		GuildDataSoundSnippetWithOwner
+	} from '$lib/snippets';
 	import type { PageData } from './$types';
 	import Sound from './Sound.svelte';
 	import TitleBar from './TitleBar.svelte';
@@ -18,6 +22,15 @@
 	let sounds = $state(data.sounds);
 
 	const { showErrorDialog } = useErrorDialogs();
+
+	async function patchCommand(patch: GuildDataCommandPatch) {
+		const updatedCommand = await rest.guildCommandPatch(guildId, commandId, patch);
+		commandName = updatedCommand.name;
+	}
+
+	async function deleteCommand() {
+		await rest.guildCommandDelete(guildId, commandId);
+	}
 
 	async function createNewSoundFromFile(file: File) {
 		const createdSound = await rest.guildCommandSoundPost(guildId, commandId, file);
@@ -52,7 +65,12 @@
 <Header userInfo={{ username: data.username }} />
 
 <Content>
-	<TitleBar bind:title={commandName} guildName={data.command.guildName} />
+	<TitleBar
+		bind:title={commandName}
+		guildName={data.command.guildName}
+		handleSave={patchCommand}
+		handleDelete={deleteCommand}
+	/>
 
 	<div class="sounds">
 		{#each sounds as sound (sound.id)}
