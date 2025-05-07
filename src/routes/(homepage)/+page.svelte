@@ -23,6 +23,10 @@
 	let botDisabledGuilds = $derived(guilds.filter((guild) => guild.guildData === undefined));
 </script>
 
+<svelte:head>
+	<title>Clipbot</title>
+</svelte:head>
+
 <Header userInfo={{ username: data.username }} />
 
 <Content>

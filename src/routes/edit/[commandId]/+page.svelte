@@ -1,20 +1,20 @@
 <script lang="ts">
-	import Button from '$lib/components/Button.svelte';
 	import Content from '$lib/components/Content.svelte';
 	import { useErrorDialogs } from '$lib/components/ErrorDialogWrapper.svelte';
 	import FileButton from '$lib/components/FileButton.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { rest } from '$lib/rest';
 	import type { GuildDataSoundPatch, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
-	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import type { PageData } from './$types';
 	import Sound from './Sound.svelte';
+	import TitleBar from './TitleBar.svelte';
 
 	let { data }: { data: PageData } = $props();
 
 	let guildId = $derived(data.command.guildId);
 	let commandId = $derived(data.command.id);
 
+	let commandName = $state(data.command.name);
 	let sounds = $state(data.sounds);
 
 	const { showErrorDialog } = useErrorDialogs();
@@ -46,20 +46,13 @@
 </script>
 
 <svelte:head>
-	<title>Edit {data.command.name} sounds</title>
+	<title>Edit {commandName} sounds</title>
 </svelte:head>
 
 <Header userInfo={{ username: data.username }} />
 
 <Content>
-	<div class="title">
-		<a class="back-button" href="/">
-			<Button icon={ArrowLeftIcon} iconStroke outline buttonProps={{ tabindex: -1 }}>Guilds</Button>
-		</a>
-
-		<h2>{data.command.name}</h2>
-		<p>A sound command in {data.command.guildName}</p>
-	</div>
+	<TitleBar bind:title={commandName} guildName={data.command.guildName} />
 
 	<div class="sounds">
 		{#each sounds as sound (sound.id)}
@@ -83,45 +76,17 @@
 <style lang="scss">
 	@use '$lib/style/scheme';
 
-	a {
-		color: inherit;
-	}
-
 	.actions {
 		display: flex;
 		justify-content: end;
 		padding-top: 0;
 	}
 
-	.title {
-		position: relative;
-		margin: 0.67em 0;
-	}
-
-	.back-button {
-		position: absolute;
-		right: 100%;
-		margin: 0.9em 40px;
-	}
-
-	h2 {
-		margin: 0;
-	}
-
-	.title p {
-		line-height: 1;
-		margin: 0;
-	}
-
 	.sounds {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		margin: 1em 0;
-	}
-
-	.actions {
-		margin-top: 8px;
+		margin-bottom: 1em;
 	}
 
 	.sounds .empty-note {

@@ -92,13 +92,14 @@
 		border-bottom: 1px solid scheme.color('separator');
 		padding: 0;
 
-		&:read-only {
-			border-bottom-color: transparent;
-		}
-
 		&:hover,
 		&:focus {
 			border-bottom-color: scheme.color('shade-4');
+		}
+
+		&:read-only {
+			border-bottom-color: transparent;
+			outline: transparent;
 		}
 	}
 
