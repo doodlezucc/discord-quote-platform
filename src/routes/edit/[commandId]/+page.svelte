@@ -9,7 +9,7 @@
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import { Tether } from 'svelte-tether';
 	import type { PageData } from './$types';
-	import Sound from './(components)/Sound.svelte';
+	import Sound from './Sound.svelte';
 
 	let { data }: { data: PageData } = $props();
 

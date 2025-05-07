@@ -5,7 +5,7 @@
 	import type { UserGuildSnippet } from '$lib/snippets';
 	import { onMount } from 'svelte';
 	import type { PageData } from './$types';
-	import Guild from './(components)/Guild.svelte';
+	import Guild from './Guild.svelte';
 
 	let { data }: { data: PageData } = $props();
 
