@@ -19,7 +19,14 @@
 	let commandId = $derived(data.command.id);
 
 	let commandName = $state(data.command.name);
-	let sounds = $state(data.sounds);
+	let sounds = $state(
+		data.sounds.toSorted((a, b) => {
+			const aIsEditable = a.createdBy.id === data.member.id;
+			const bIsEditable = b.createdBy.id === data.member.id;
+
+			return (bIsEditable ? 1 : 0) - (aIsEditable ? 1 : 0);
+		})
+	);
 
 	const { showErrorDialog } = useErrorDialogs();
 
