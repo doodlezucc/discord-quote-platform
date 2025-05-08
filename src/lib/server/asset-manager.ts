@@ -92,9 +92,8 @@ export class AssetManager {
 	}
 
 	async deleteAsset(asset: PartialAsset) {
-		await db.delete(table.asset).where(eq(table.asset.id, asset.id));
-
 		await this.disposeAssetFile(asset.path);
+		await db.delete(table.asset).where(eq(table.asset.id, asset.id));
 	}
 
 	async deleteAssetsInBatch(assets: PartialAsset[]) {

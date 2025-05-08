@@ -74,6 +74,7 @@ export class CommandRunner {
 		player
 			.on('stateChange', (_oldState, newState) => {
 				if (newState.status == AudioPlayerStatus.Idle) {
+					player.stop(true);
 					connection.disconnect();
 				}
 			})

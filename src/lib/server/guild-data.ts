@@ -88,6 +88,7 @@ export class GuildData {
 		}
 
 		await db.delete(table.command).where(eq(table.command.id, id));
+		this.guildState.queryProcessor.clearResultsOfCommand(id);
 	}
 
 	async createSound({
@@ -109,6 +110,9 @@ export class GuildData {
 		};
 
 		await db.insert(table.sound).values(sound);
+
+		this.guildState.queryProcessor.clearResultsOfCommand(commandId);
+
 		return {
 			id: sound.id,
 			mediaPath: server.assetManager.resolveAssetPath(asset.path),
@@ -142,6 +146,8 @@ export class GuildData {
 
 		await db.update(table.sound).set(patch).where(eq(table.sound.id, id));
 
+		this.guildState.queryProcessor.clearResultsContainingSound(id);
+
 		return {
 			id: original.sound.id,
 			name: original.sound.name,
@@ -172,6 +178,9 @@ export class GuildData {
 			throw error(403, { message: 'Sound is owned by a different user' });
 		}
 
+		this.guildState.queryProcessor.removeSoundFromResults(id);
+
+		// The sound gets deleted as a cascade effect
 		await server.assetManager.deleteAsset({ id: entry.assetId!, path: entry.assetPath! });
 	}
 }

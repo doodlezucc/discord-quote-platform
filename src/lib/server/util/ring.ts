@@ -15,6 +15,10 @@ export class Ring<E> {
 		this.index = (this.index + 1) % this.length;
 	}
 
+	some(predicate: (item: E) => boolean) {
+		return this.items.some(predicate);
+	}
+
 	removeWhere(predicate: (item: E) => boolean) {
 		let i = 0;
 

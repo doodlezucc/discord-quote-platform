@@ -22,7 +22,27 @@ const SEARCH_RESULT_THRESHOLD = 0.5;
 export class GuildQueryProcessor {
 	private queryResultRings = new Map<string, Ring<Sound>>();
 
-	onSoundDelete(soundId: string) {
+	clearResultsOfCommand(commandId: string) {
+		const unmodifiedKeys = [...this.queryResultRings.keys()];
+
+		for (const key of unmodifiedKeys) {
+			if (key.startsWith(commandId)) {
+				this.queryResultRings.delete(key);
+			}
+		}
+	}
+
+	clearResultsContainingSound(soundId: string) {
+		const unmodifiedEntries = [...this.queryResultRings.entries()];
+
+		for (const [key, ring] of unmodifiedEntries) {
+			if (ring.some((sound) => sound.id === soundId)) {
+				this.queryResultRings.delete(key);
+			}
+		}
+	}
+
+	removeSoundFromResults(soundId: string) {
 		for (const ring of this.queryResultRings.values()) {
 			ring.removeWhere((sound) => sound.id === soundId);
 		}
