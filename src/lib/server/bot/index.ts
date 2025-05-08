@@ -5,6 +5,17 @@ import { db } from '../db';
 import * as table from '../db/schema';
 import { GuildState } from './guild-state';
 
+// This is a workaround to clean up whenever hot-reloading bot relevant source code
+// Ideally, you'd use import.meta.hot.dispose(...) from vite, but there are currently
+// issues with SvelteKit: https://github.com/sveltejs/kit/issues/13359
+declare const globalThis: {
+	__discordClient?: Client;
+};
+
+if (globalThis.__discordClient) {
+	globalThis.__discordClient.destroy();
+}
+
 const client = new Client({
 	intents: [
 		GatewayIntentBits.Guilds,
@@ -13,6 +24,7 @@ const client = new Client({
 		GatewayIntentBits.GuildVoiceStates
 	]
 });
+globalThis.__discordClient = client;
 
 export class Bot {
 	readonly guildStates = new Map<string, GuildState>();
@@ -25,12 +37,14 @@ export class Bot {
 		const allJoinedGuilds = await db.select({ id: table.guild.id }).from(table.guild);
 
 		for (const guild of allJoinedGuilds) {
-			this.initializeGuildState(guild.id);
+			await this.initializeGuildState(guild.id);
 		}
 	}
 
-	private initializeGuildState(guildId: string) {
-		this.guildStates.set(guildId, new GuildState(guildId));
+	private async initializeGuildState(guildId: string) {
+		const guild = await this.client.guilds.fetch(guildId);
+		const guildMember = await guild.members.fetchMe();
+		this.guildStates.set(guildId, new GuildState(guildId, guildMember));
 	}
 
 	private async forgetGuild(guildId: string) {
@@ -46,7 +60,7 @@ export class Bot {
 		console.log('Added to a guild');
 		await db.insert(table.guild).values({ id: guild.id });
 
-		this.initializeGuildState(guild.id);
+		await this.initializeGuildState(guild.id);
 	}
 
 	async onRemovedFromGuild(guild: Guild) {

@@ -1,10 +1,13 @@
-import type { Message } from 'discord.js';
+import type { GuildMember, Message } from 'discord.js';
 import { GuildData } from '../guild-data';
 
 export class GuildState {
 	readonly data: GuildData;
 
-	constructor(readonly id: string) {
+	constructor(
+		readonly id: string,
+		readonly member: GuildMember
+	) {
 		this.data = new GuildData(this);
 	}
 
