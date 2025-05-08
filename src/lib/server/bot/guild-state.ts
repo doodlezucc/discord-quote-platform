@@ -4,16 +4,16 @@ import { db } from '../db';
 import * as table from '../db/schema';
 import { GuildData } from '../guild-data';
 import { CommandRunner } from './command-runner';
+import { GuildQueryProcessor } from './guild-query-processor';
 
 export class GuildState {
-	readonly data: GuildData;
+	readonly data = new GuildData(this);
+	readonly queryProcessor = new GuildQueryProcessor();
 
 	constructor(
 		readonly id: string,
 		readonly member: GuildMember
-	) {
-		this.data = new GuildData(this);
-	}
+	) {}
 
 	async processMessage(message: Message<true>) {
 		if (message.member!.user.bot) return;
@@ -27,12 +27,12 @@ export class GuildState {
 			.where(and(eq(table.command.guildId, this.id), eq(table.command.name, commandName)));
 
 		if (command) {
-			const commandHandler = new CommandRunner(this, {
+			const commandRunner = new CommandRunner(this, {
 				sourceMessage: message,
 				commandId: command.id,
 				query
 			});
-			await commandHandler.handle();
+			await commandRunner.handle();
 		}
 	}
 }

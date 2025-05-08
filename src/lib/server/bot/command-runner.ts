@@ -5,10 +5,7 @@ import {
 	joinVoiceChannel
 } from '@discordjs/voice';
 import type { Message, VoiceBasedChannel } from 'discord.js';
-import { eq } from 'drizzle-orm';
 import { server } from '..';
-import { db } from '../db';
-import * as table from '../db/schema';
 import type { GuildState } from './guild-state';
 
 interface CommandContext {
@@ -39,25 +36,25 @@ export class CommandRunner {
 			return this.failWithMissingVoiceChannel();
 		}
 
-		const matchingSounds = await db
-			.select()
-			.from(table.sound)
-			.where(eq(table.sound.commandId, this.commandId))
-			.leftJoin(table.asset, eq(table.asset.id, table.sound.assetId));
+		const sound = await this.guildState.queryProcessor.searchForSound(this.commandId, this.query);
 
-		const topSoundFilePath = server.assetManager.resolveAssetPath(matchingSounds[0].asset!.path, {
+		if (!sound) {
+			return this.failWithNoMatchingSounds();
+		}
+
+		const topSoundFilePath = server.assetManager.resolveAssetPath(sound.assetPath, {
 			accessibleByBackend: true
 		});
 
-		this.playSound(voiceChannel, topSoundFilePath);
+		await this.playSound(voiceChannel, topSoundFilePath);
 	}
 
-	private playSound(voiceChannel: VoiceBasedChannel, soundFilePath: string) {
+	private async playSound(voiceChannel: VoiceBasedChannel, soundFilePath: string) {
 		const guildId = voiceChannel.guildId;
 
 		const permissions = voiceChannel.permissionsFor(this.guildState.member);
 		if (!permissions.has('Connect') || !permissions.has('Speak')) {
-			return this.failWithMissingPermissions();
+			return await this.failWithMissingPermissions();
 		}
 
 		const resource = createAudioResource(soundFilePath, {
@@ -75,12 +72,12 @@ export class CommandRunner {
 
 		const player = createAudioPlayer();
 		player
-			.addListener('stateChange', (_oldState, newState) => {
+			.on('stateChange', (_oldState, newState) => {
 				if (newState.status == AudioPlayerStatus.Idle) {
 					connection.disconnect();
 				}
 			})
-			.addListener('error', (err) => {
+			.on('error', (err) => {
 				connection.disconnect();
 				console.error(err);
 			});
@@ -104,5 +101,9 @@ export class CommandRunner {
 
 	private async failWithMissingPermissions() {
 		await this.sourceMessage.channel.send('need permission to join voice channels somehow.');
+	}
+
+	private async failWithNoMatchingSounds() {
+		await this.sourceMessage.channel.send('No matching sounds!');
 	}
 }
