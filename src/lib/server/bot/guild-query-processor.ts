@@ -17,34 +17,40 @@ interface Sound {
 	assetPath: string;
 }
 
+interface QueryResultBucket {
+	sounds: Ring<Sound>;
+	invalidationTimeout: NodeJS.Timeout;
+}
+
 const SEARCH_RESULT_THRESHOLD = 0.5;
+const RING_TIMEOUT_MILLISECONDS = 20 * 60 * 1000;
 
 export class GuildQueryProcessor {
-	private queryResultRings = new Map<string, Ring<Sound>>();
+	private queryResultBuckets = new Map<string, QueryResultBucket>();
 
 	clearResultsOfCommand(commandId: string) {
-		const unmodifiedKeys = [...this.queryResultRings.keys()];
+		const unmodifiedKeys = [...this.queryResultBuckets.keys()];
 
 		for (const key of unmodifiedKeys) {
 			if (key.startsWith(commandId)) {
-				this.queryResultRings.delete(key);
+				this.queryResultBuckets.delete(key);
 			}
 		}
 	}
 
 	clearResultsContainingSound(soundId: string) {
-		const unmodifiedEntries = [...this.queryResultRings.entries()];
+		const unmodifiedEntries = [...this.queryResultBuckets.entries()];
 
-		for (const [key, ring] of unmodifiedEntries) {
-			if (ring.some((sound) => sound.id === soundId)) {
-				this.queryResultRings.delete(key);
+		for (const [key, bucket] of unmodifiedEntries) {
+			if (bucket.sounds.some((sound) => sound.id === soundId)) {
+				this.queryResultBuckets.delete(key);
 			}
 		}
 	}
 
 	removeSoundFromResults(soundId: string) {
-		for (const ring of this.queryResultRings.values()) {
-			ring.removeWhere((sound) => sound.id === soundId);
+		for (const bucket of this.queryResultBuckets.values()) {
+			bucket.sounds.removeWhere((sound) => sound.id === soundId);
 		}
 	}
 
@@ -60,11 +66,15 @@ export class GuildQueryProcessor {
 		query = query?.trim();
 
 		const queryId = `${commandId}${query ?? ''}`;
-		const activeSoundRing = this.queryResultRings.get(queryId);
+		const activeResultBucket = this.queryResultBuckets.get(queryId);
 
-		if (activeSoundRing) {
-			activeSoundRing.rotate();
-			return activeSoundRing;
+		if (activeResultBucket) {
+			activeResultBucket.sounds.rotate();
+
+			clearTimeout(activeResultBucket.invalidationTimeout);
+			activeResultBucket.invalidationTimeout = this.createInvalidationTimeout(queryId);
+
+			return activeResultBucket.sounds;
 		}
 
 		const allSounds: DatabaseSound[] = await db
@@ -84,18 +94,7 @@ export class GuildQueryProcessor {
 			return undefined;
 		}
 
-		shuffleArray(matchingSounds);
-
-		const ring = new Ring(
-			matchingSounds.map<Sound>((sound) => ({
-				id: sound.id,
-				assetPath: sound.assetPath!
-			}))
-		);
-
-		this.queryResultRings.set(queryId, ring);
-
-		return ring;
+		return this.registerNewRing(queryId, matchingSounds);
 	}
 
 	private filterMatchingSounds(sounds: DatabaseSound[], query?: string): DatabaseSound[] {
@@ -112,5 +111,29 @@ export class GuildQueryProcessor {
 		return searchResults
 			.filter((result) => result.score! < SEARCH_RESULT_THRESHOLD)
 			.map((result) => result.item);
+	}
+
+	private registerNewRing(queryId: string, dbSounds: DatabaseSound[]) {
+		const sounds = dbSounds.map<Sound>((sound) => ({
+			id: sound.id,
+			assetPath: sound.assetPath!
+		}));
+
+		shuffleArray(sounds);
+
+		const ring = new Ring(sounds);
+
+		this.queryResultBuckets.set(queryId, {
+			sounds: ring,
+			invalidationTimeout: this.createInvalidationTimeout(queryId)
+		});
+
+		return ring;
+	}
+
+	private createInvalidationTimeout(queryId: string) {
+		return setTimeout(() => {
+			this.queryResultBuckets.delete(queryId);
+		}, RING_TIMEOUT_MILLISECONDS);
 	}
 }
