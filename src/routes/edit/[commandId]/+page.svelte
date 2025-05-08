@@ -53,7 +53,7 @@
 		} catch (err) {
 			// Re-insert sound
 			sounds = sounds.toSpliced(soundIndex, 0, sound);
-			showErrorDialog({ message: `Failed to upload sound. ${err}` });
+			showErrorDialog({ message: `Failed to delete sound. ${err}` });
 		}
 	}
 </script>
