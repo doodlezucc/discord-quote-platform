@@ -7,16 +7,19 @@
 	import type { GuildDataSoundPatch, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import TrashIcon from '@lucide/svelte/icons/trash';
+	import UserLockIcon from '@lucide/svelte/icons/user-lock';
 	import InlineAudioPlayer from './InlineAudioPlayer.svelte';
 	import UserAvatar from './UserAvatar.svelte';
 
 	type Props = GuildDataSoundSnippetWithOwner & {
+		isEditable: boolean;
 		handlePatch: (patch: GuildDataSoundPatch) => Promise<void>;
 		handleDelete: () => void;
 	};
 
 	let {
 		createdBy,
+		isEditable,
 		handlePatch,
 		handleDelete,
 		name = $bindable(),
@@ -81,12 +84,18 @@
 	);
 </script>
 
-<div class="sound" aria-label="Sound" aria-expanded={isExpanded} bind:this={container}>
+<div
+	class="sound"
+	class:editable={isEditable}
+	aria-label="Sound"
+	aria-expanded={isExpanded}
+	bind:this={container}
+>
 	<div class="overview">
 		<InlineAudioPlayer src={mediaPath} />
 
 		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="summary" onmousedown={expand} bind:this={summary}>
+		<div class="summary" onmousedown={isEditable ? expand : undefined} bind:this={summary}>
 			<Input
 				name="sound-name"
 				placeholder="Name..."
@@ -103,8 +112,12 @@
 			</div>
 
 			{#if !isExpanded}
-				<div class="expand-icon">
-					<IconButton icon={PencilIcon} stroke onclick={expand}>Edit</IconButton>
+				<div class="access-icon">
+					{#if isEditable}
+						<IconButton icon={PencilIcon} stroke onclick={expand}>Edit</IconButton>
+					{:else}
+						<IconButton icon={UserLockIcon} stroke>No Access</IconButton>
+					{/if}
 				</div>
 
 				<UserAvatar {...createdBy} />
@@ -138,27 +151,25 @@
 		transition: background-color 0.2s;
 
 		&[aria-expanded='false'] {
-			.summary {
-				cursor: pointer;
-			}
-
 			.summary > :global(*) {
 				pointer-events: none;
 			}
 
-			&:has(.summary:hover) {
-				background-color: scheme.color('shade-1');
-				transition-duration: 0.1s;
+			&.editable {
+				.summary {
+					cursor: pointer;
+				}
+
+				&:has(.summary:hover) {
+					background-color: scheme.color('shade-1');
+					transition-duration: 0.1s;
+				}
 			}
 		}
 
 		&[aria-expanded='true'] {
 			border-color: transparent;
 			outline: 2px dashed scheme.color('shade-4');
-
-			.expand-icon {
-				color: scheme.color('primary');
-			}
 		}
 	}
 
@@ -189,7 +200,7 @@
 		}
 	}
 
-	.expand-icon {
+	.access-icon {
 		padding: 0 8px;
 	}
 

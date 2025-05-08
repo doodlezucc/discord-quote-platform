@@ -79,6 +79,7 @@
 				{...sound}
 				bind:name={sound.name}
 				bind:keywords={sound.keywords}
+				isEditable={sound.createdBy.id === data.member.id}
 				handlePatch={(patch) => patchSound(sound, patch)}
 				handleDelete={() => deleteSound(sound)}
 			/>
