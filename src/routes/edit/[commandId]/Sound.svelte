@@ -97,7 +97,7 @@
 			/>
 
 			<div class="keywords" role="list" aria-label="Keywords">
-				{#each separateKeywords as keyword}
+				{#each separateKeywords as keyword, index (`${keyword}${index}`)}
 					<Chip>{keyword}</Chip>
 				{/each}
 			</div>

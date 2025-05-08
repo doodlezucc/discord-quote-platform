@@ -1,5 +1,5 @@
 import { DISCORD_BOT_TOKEN } from '$env/static/private';
-import { Client, Events, GatewayIntentBits, Guild, Message } from 'discord.js';
+import { Client, Events, GatewayIntentBits, type Guild, type Message } from 'discord.js';
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import * as table from '../db/schema';

@@ -1,6 +1,6 @@
 import { error, type RequestEvent, type RequestHandler } from '@sveltejs/kit';
 import { REST as DiscordRest, Routes, type RESTGetAPICurrentUserGuildsResult } from 'discord.js';
-import { z, ZodObject } from 'zod';
+import { z, type ZodObject } from 'zod';
 import type { Session } from './auth';
 import { bot } from './bot';
 
