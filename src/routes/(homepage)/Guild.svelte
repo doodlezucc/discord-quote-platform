@@ -1,18 +1,33 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { PUBLIC_DISCORD_CLIENT_ID } from '$env/static/public';
 	import Button from '$lib/components/Button.svelte';
 	import { rest } from '$lib/rest';
 	import type { UserGuildSnippet } from '$lib/snippets';
 	import PlusIcon from '@lucide/svelte/icons/plus';
 	import CommandFolder from './CommandFolder.svelte';
+	import NewCommand from './NewCommand.svelte';
 
 	type Props = UserGuildSnippet;
 
 	let { id, name, iconId, guildData = $bindable() }: Props = $props();
 
-	async function createCommand() {
-		const createdCommand = await rest.guildCommandPost(id, 'new-command');
+	async function createCommand(name: string) {
+		const createdCommand = await rest.guildCommandPost(id, name);
 		guildData!.commands.push({ ...createdCommand, soundCount: 0 });
+		return createdCommand;
+	}
+
+	let isTypingNewCommand = $state(false);
+	let newCommandName = $state('');
+
+	async function onSubmitNewCommand() {
+		const command = await createCommand(newCommandName);
+
+		newCommandName = '';
+		isTypingNewCommand = false;
+
+		goto(`/edit/${command.id}`);
 	}
 </script>
 
@@ -49,7 +64,17 @@
 				<CommandFolder commandId={command.id} name={command.name} soundCount={command.soundCount} />
 			{/each}
 
-			<Button outline icon={PlusIcon} onclick={createCommand}>Add Command</Button>
+			{#if isTypingNewCommand}
+				<NewCommand
+					bind:name={newCommandName}
+					onSubmit={onSubmitNewCommand}
+					onCancel={() => (isTypingNewCommand = false)}
+				/>
+			{:else}
+				<Button outline icon={PlusIcon} onclick={() => (isTypingNewCommand = true)}>
+					Add Command
+				</Button>
+			{/if}
 		</div>
 	{/if}
 </div>

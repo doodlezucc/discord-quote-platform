@@ -41,7 +41,8 @@ async function convertGuildToSnippet(
 			.from(table.command)
 			.where(eq(table.command.guildId, guild.id))
 			.leftJoin(table.sound, eq(table.sound.commandId, table.command.id))
-			.groupBy(table.command.id);
+			.groupBy(table.command.id)
+			.orderBy(table.command.name);
 
 		return {
 			id: guild.id,
