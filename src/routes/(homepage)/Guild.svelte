@@ -52,7 +52,7 @@
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					<Button buttonProps={{ tabindex: -1 }}>Invite Clipbot</Button>
+					<Button buttonProps={{ tabindex: -1 }}>Invite Quotebot</Button>
 				</a>
 			</div>
 		{/if}

@@ -24,7 +24,7 @@
 </script>
 
 <svelte:head>
-	<title>Clipbot</title>
+	<title>Quotebot</title>
 </svelte:head>
 
 <Header userInfo={{ username: data.username }} />

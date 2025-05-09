@@ -13,7 +13,7 @@
 </script>
 
 <header>
-	<a href="{base}/"><h1>Clipbot</h1></a>
+	<a href="{base}/"><h1>Quotebot</h1></a>
 
 	{#if userInfo}
 		<div class="trailing">
