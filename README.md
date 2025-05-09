@@ -1,38 +1,48 @@
-# sv
+# Discord Quote Platform
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A platform for uploading custom sound clips to play in your Discord server.
 
-## Creating a project
+## Contributing
 
-If you're seeing this, you've probably already done this step. Congrats!
+This repository consists of frontend, backend and a Discord bot, all managed as a single SvelteKit project.
 
-```bash
-# create a new project in the current directory
-npx sv create
+Apart from [pnpm](https://pnpm.io/), you also need to have the CLI tool [ffmpeg](https://ffmpeg.org/) installed on your machine and on your `$PATH`.
 
-# create a new project in my-app
-npx sv create my-app
+### Setup
+
+First, duplicate the `.env.example` file and rename it to `.env` - all properties from the example have to be filled out for the application to run.
+
+Then, get started by installing the dependencies with `pnpm` and setting up the SQLite database:
+
+```sh
+pnpm install
+pnpm db:push
 ```
 
-## Developing
+### Development
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+As with most Vite powered projects, the development server can be started with the following:
 
-```bash
-npm run dev
+```sh
+# Start the frontend, backend and Discord client.
+pnpm dev
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+# Optionally, open the served website in your browser.
+pnpm dev --open
 ```
 
-## Building
+### Building
 
-To create a production version of your app:
+The project can be compiled into an optimized Node.js server by running the following command:
 
-```bash
-npm run build
+```sh
+pnpm build
 ```
 
-You can preview the production build with `npm run preview`.
+The built server can then be run with the `node` command:
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+```sh
+node --env-file=.env ./build
+```
+
+You can [specify environment variables](https://svelte.dev/docs/kit/adapter-node#Environment-variables) to configure a custom port and other server settings.
