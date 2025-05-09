@@ -61,7 +61,8 @@ function createFFmpegInputFromRequest(request: Request) {
 }
 
 export interface AudioEffectOptions {
-	amplify: number;
+	clippingThreshold: number;
+	volume: number;
 }
 
 export function pipeToEffectProcessed(
@@ -82,8 +83,15 @@ export function pipeToEffectProcessed(
 		.inputFormat(inputFormat)
 		.audioFilter([
 			{
+				filter: 'asoftclip',
+				options: {
+					type: 'hard',
+					threshold: effects.clippingThreshold
+				}
+			},
+			{
 				filter: 'volume',
-				options: `${effects.amplify}dB`
+				options: effects.volume
 			}
 		])
 		.outputFormat(outputFormat)

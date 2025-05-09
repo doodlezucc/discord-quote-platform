@@ -2,7 +2,8 @@ import {
 	AudioPlayerStatus,
 	createAudioPlayer,
 	createAudioResource,
-	joinVoiceChannel
+	joinVoiceChannel,
+	StreamType
 } from '@discordjs/voice';
 import type { Message, VoiceBasedChannel } from 'discord.js';
 import { createReadStream } from 'node:fs';
@@ -60,12 +61,16 @@ export class CommandRunner {
 		}
 
 		const rawAudioStream = createReadStream(soundFilePath);
-		const inputStream = pipeToEffectProcessed(rawAudioStream, 'ogg', 'ogg', { amplify: 8 });
+		const inputStream = pipeToEffectProcessed(rawAudioStream, 'ogg', 'ogg', {
+			clippingThreshold: 0.3,
+			volume: 0.125
+		});
 
 		const resource = createAudioResource(inputStream, {
-			inlineVolume: true
+			// For some reason, "inlineVolume" is needed when passing an input stream
+			inlineVolume: true,
+			inputType: StreamType.OggOpus
 		});
-		resource.volume!.setVolume(0.125);
 
 		const connection = joinVoiceChannel({
 			channelId: voiceChannel.id,
