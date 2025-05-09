@@ -4,14 +4,28 @@
 		max: number;
 		describeValue: (value: number) => string;
 
+		background?: 'light' | 'dark';
 		onchange?: (value: number) => void;
-		tabindex?: number;
+
+		/** Read-only. */
+		isDragging?: boolean;
 	}
 
-	let { value = $bindable(), max, describeValue, onchange, tabindex }: Props = $props();
+	let {
+		value = $bindable(),
+		max,
+		describeValue,
+		background = 'light',
+		onchange,
+		isDragging: readOnlyIsDragging = $bindable(false)
+	}: Props = $props();
 
 	let dragStart = $state<{ rect: DOMRect }>();
 	let isDragging = $derived(dragStart !== undefined);
+
+	$effect(() => {
+		readOnlyIsDragging = isDragging;
+	});
 
 	function inferValueFromMouse(ev: MouseEvent) {
 		if (!dragStart) return;
@@ -41,9 +55,11 @@
 
 <div
 	class="progress"
+	class:dark-background={background === 'dark'}
+	class:dragging={isDragging}
 	style:--progress={value / max}
 	role="slider"
-	{tabindex}
+	tabindex={-1}
 	aria-valuetext={describeValue(value)}
 	aria-valuenow={value}
 	aria-valuemin={0}
@@ -75,7 +91,7 @@
 		background: stop-gradient(
 			calc(var(--progress) * 100%),
 			scheme.color('primary'),
-			scheme.color('background')
+			scheme.color('separator')
 		);
 
 		&::after {
@@ -86,8 +102,19 @@
 			width: 100%;
 		}
 
-		&:hover .handle {
-			opacity: 1;
+		&:hover,
+		&.dragging {
+			.handle {
+				opacity: 1;
+			}
+		}
+
+		&.dark-background {
+			background: stop-gradient(
+				calc(var(--progress) * 100%),
+				scheme.color('primary'),
+				scheme.color('background')
+			);
 		}
 	}
 

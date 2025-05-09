@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { volume } from '$lib/client-state/variables.svelte';
 	import { useAnimationFrame } from '$lib/components/animation-frame.svelte';
 	import Duration, { convertSecondsToDuration } from '$lib/components/Duration.svelte';
 	import IconButton from '$lib/components/IconButton.svelte';
@@ -70,7 +71,7 @@
 		max={audioDuration}
 		describeValue={convertSecondsToDuration}
 		onchange={(value) => (audioCurrentTime = value)}
-		tabindex={-1}
+		background="dark"
 	/>
 
 	<span aria-label="Sound duration"><Duration seconds={audioDuration} /></span>
@@ -81,6 +82,7 @@
 		bind:paused={audioPaused}
 		bind:currentTime={audioCurrentTime}
 		bind:duration={audioDuration}
+		volume={volume.value}
 	></audio>
 </div>
 

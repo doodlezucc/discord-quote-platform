@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { base } from '$app/paths';
 	import Button from './Button.svelte';
+	import VolumeSlider from './VolumeSlider.svelte';
 
 	interface Props {
 		userInfo?: {
@@ -16,6 +17,8 @@
 
 	{#if userInfo}
 		<div class="trailing">
+			<VolumeSlider />
+
 			<span aria-label="Logged in user">{userInfo.username}</span>
 
 			<form method="POST" action="?/logout">
