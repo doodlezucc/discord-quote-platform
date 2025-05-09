@@ -11,6 +11,7 @@ import { server } from '.';
 import type { GuildState } from './bot/guild-state';
 import { db } from './db';
 import * as table from './db/schema';
+import { streamRequestBodyToNormalizedOpus } from './processing';
 
 export class GuildData {
 	constructor(readonly guildState: GuildState) {}
@@ -99,7 +100,13 @@ export class GuildData {
 	}: CreateSoundOptions): Promise<GuildDataSoundSnippet> {
 		await this.readCommand(commandId);
 
-		const asset = await server.assetManager.uploadAsset(userId, request);
+		let asset: table.Asset;
+		try {
+			const normalizedStream = streamRequestBodyToNormalizedOpus(request);
+			asset = await server.assetManager.createAsset(userId, normalizedStream, 'audio/ogg', 'ogg');
+		} catch {
+			throw error(400, { message: 'Failed to process sound' });
+		}
 
 		const sound: table.Sound = {
 			id: crypto.randomUUID(),

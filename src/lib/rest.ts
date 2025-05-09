@@ -35,8 +35,18 @@ class RestCaller {
 		});
 
 		if (!response.ok) {
-			const responseText = await response.text();
-			throw new Error(`Error during REST call (${path}): ${responseText}`);
+			if (response.headers.get('Content-Type') === 'application/json') {
+				const error = await response.json();
+
+				if ('message' in error) {
+					throw new Error(error.message);
+				} else {
+					throw new Error(error);
+				}
+			} else {
+				const responseText = await response.text();
+				throw new Error(responseText);
+			}
 		}
 
 		return response;

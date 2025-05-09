@@ -2,6 +2,8 @@ import { base } from '$app/paths';
 import { eq, inArray } from 'drizzle-orm';
 import * as fs from 'fs/promises';
 import * as mime from 'mime-types';
+import { Readable } from 'stream';
+import type { ReadableStream } from 'stream/web';
 import { db } from './db';
 import * as table from './db/schema';
 import { generateUniqueString } from './util/generate-string';
@@ -59,6 +61,20 @@ export class AssetManager {
 			throw new Error('Asset upload failed because MIME type could not be recognized');
 		}
 
+		return await this.createAsset(
+			uploaderId,
+			Readable.fromWeb(request.body! as ReadableStream),
+			contentType,
+			fileExtension
+		);
+	}
+
+	async createAsset(
+		uploaderId: string,
+		stream: Readable,
+		contentType: string,
+		fileExtension: string
+	): Promise<table.Asset> {
 		const fileName = await generateUniqueString({
 			length: 8,
 			map: (id) => `${id}.${fileExtension}`,
@@ -73,10 +89,17 @@ export class AssetManager {
 			}
 		});
 
-		const buffer = await request.arrayBuffer();
-
 		const systemPath = this.getPathToFile(fileName);
-		await fs.writeFile(systemPath, new Uint8Array(buffer));
+		fs.writeFile(systemPath, stream, { flush: true }).catch(() => {});
+
+		await new Promise<void>((resolve, reject) =>
+			stream
+				.once('end', () => resolve())
+				.once('error', (err) => {
+					fs.unlink(systemPath).catch((reason) => reject(reason));
+					reject(err);
+				})
+		);
 
 		const storedAsset: table.Asset = {
 			id: crypto.randomUUID(),

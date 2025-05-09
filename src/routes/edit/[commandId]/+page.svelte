@@ -40,8 +40,12 @@
 	}
 
 	async function createNewSoundFromFile(file: File) {
-		const createdSound = await rest.guildCommandSoundPost(guildId, commandId, file);
-		sounds.push({ ...createdSound, createdBy: data.member });
+		try {
+			const createdSound = await rest.guildCommandSoundPost(guildId, commandId, file);
+			sounds.push({ ...createdSound, createdBy: data.member });
+		} catch (err) {
+			showErrorDialog({ message: `${err}` });
+		}
 	}
 
 	async function patchSound(sound: GuildDataSoundSnippetWithOwner, patch: GuildDataSoundPatch) {
