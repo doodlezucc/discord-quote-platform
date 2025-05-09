@@ -5,7 +5,9 @@ import {
 	joinVoiceChannel
 } from '@discordjs/voice';
 import type { Message, VoiceBasedChannel } from 'discord.js';
+import { createReadStream } from 'node:fs';
 import { server } from '..';
+import { pipeToEffectProcessed } from '../processing';
 import type { GuildState } from './guild-state';
 
 interface CommandContext {
@@ -57,10 +59,13 @@ export class CommandRunner {
 			return await this.failWithMissingPermissions();
 		}
 
-		const resource = createAudioResource(soundFilePath, {
+		const rawAudioStream = createReadStream(soundFilePath);
+		const inputStream = pipeToEffectProcessed(rawAudioStream, 'ogg', 'ogg', { amplify: 8 });
+
+		const resource = createAudioResource(inputStream, {
 			inlineVolume: true
 		});
-		resource.volume!.setVolume(0.15);
+		resource.volume!.setVolume(0.125);
 
 		const connection = joinVoiceChannel({
 			channelId: voiceChannel.id,

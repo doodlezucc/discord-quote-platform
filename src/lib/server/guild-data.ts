@@ -11,7 +11,7 @@ import { server } from '.';
 import type { GuildState } from './bot/guild-state';
 import { db } from './db';
 import * as table from './db/schema';
-import { streamRequestBodyToNormalizedOpus } from './processing';
+import { pipeRequestBodyToNormalizedAudio } from './processing';
 
 export class GuildData {
 	constructor(readonly guildState: GuildState) {}
@@ -102,7 +102,7 @@ export class GuildData {
 
 		let asset: table.Asset;
 		try {
-			const normalizedStream = streamRequestBodyToNormalizedOpus(request);
+			const normalizedStream = pipeRequestBodyToNormalizedAudio(request, 'ogg');
 			asset = await server.assetManager.createAsset(userId, normalizedStream, 'audio/ogg', 'ogg');
 		} catch {
 			throw error(400, { message: 'Failed to process sound' });

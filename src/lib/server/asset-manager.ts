@@ -1,12 +1,12 @@
 import { base } from '$app/paths';
 import { eq, inArray } from 'drizzle-orm';
 import * as fs from 'fs/promises';
-import * as mime from 'mime-types';
 import { Readable } from 'stream';
 import type { ReadableStream } from 'stream/web';
 import { db } from './db';
 import * as table from './db/schema';
 import { generateUniqueString } from './util/generate-string';
+import { describeMimeType } from './util/mime-types';
 
 interface PartialAsset {
 	id: string;
@@ -56,7 +56,7 @@ export class AssetManager {
 			throw new Error('Asset upload failed because Content-Type header is not set');
 		}
 
-		const fileExtension = mime.extension(contentType);
+		const fileExtension = describeMimeType(contentType)?.extension;
 		if (!fileExtension) {
 			throw new Error('Asset upload failed because MIME type could not be recognized');
 		}
