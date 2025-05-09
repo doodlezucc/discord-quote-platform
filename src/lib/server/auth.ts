@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { OAuth2API } from '@discordjs/core';
@@ -88,13 +89,13 @@ export async function invalidateSession(sessionId: string) {
 export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
 	event.cookies.set(sessionCookieName, token, {
 		expires: expiresAt,
-		path: '/'
+		path: `${base}/`
 	});
 }
 
 export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.delete(sessionCookieName, {
-		path: '/'
+		path: `${base}/`
 	});
 }
 
@@ -107,5 +108,5 @@ export async function actionLogout(event: RequestEvent) {
 	await revokeDiscordAccessToken(event.locals.session.accessToken);
 	deleteSessionTokenCookie(event);
 
-	return redirect(303, '/login');
+	return redirect(303, `${base}/login`);
 }

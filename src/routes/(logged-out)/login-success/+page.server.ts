@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import { createSession, generateSessionToken, setSessionTokenCookie } from '$lib/server/auth';
 import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
@@ -17,5 +18,5 @@ export const load: PageServerLoad = async (event) => {
 	const session = await createSession(sessionToken, accessCode, redirectUri);
 	setSessionTokenCookie(event, sessionToken, session.expiresAt);
 
-	return redirect(303, '/');
+	return redirect(303, `${base}/`);
 };

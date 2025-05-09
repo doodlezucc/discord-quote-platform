@@ -15,8 +15,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
 		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
 		event.locals.session = session;
-	} catch (err) {
-		console.log('Error validating session token', err);
+	} catch {
 		auth.deleteSessionTokenCookie(event);
 	}
 

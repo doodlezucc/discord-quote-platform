@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import { actionLogout } from '$lib/server/auth';
 import { OAuth2API } from '@discordjs/core';
 import { redirect, type Actions } from '@sveltejs/kit';
@@ -6,7 +7,7 @@ import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ locals: { session } }) => {
 	if (!session) {
-		return redirect(303, '/login');
+		return redirect(303, `${base}/login`);
 	}
 
 	const discordRest = new REST({ authPrefix: 'Bearer' }).setToken(session.accessToken);

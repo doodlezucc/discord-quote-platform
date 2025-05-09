@@ -5,7 +5,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.session) {
-		return redirect(303, '/');
+		return redirect(303, `${base}/`);
 	}
 	return {};
 };

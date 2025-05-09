@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import { actionLogout } from '$lib/server/auth';
 import { bot } from '$lib/server/bot';
 import { db } from '$lib/server/db';
@@ -13,7 +14,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async ({ locals: { session }, params }) => {
 	if (!session) {
 		// TODO: add a query parameter to redirect to this exact page when logged in
-		return redirect(303, '/login');
+		return redirect(303, `${base}/login`);
 	}
 
 	const [command = undefined] = await db

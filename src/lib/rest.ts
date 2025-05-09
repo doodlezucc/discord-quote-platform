@@ -1,3 +1,4 @@
+import { base } from '$app/paths';
 import type {
 	GuildDataCommandPatch,
 	GuildDataCommandSnippet,
@@ -15,7 +16,7 @@ type RestCallOptions = Omit<RequestInit, 'method'> & {
 
 class RestCaller {
 	private async request(method: HttpMethod, path: string, options?: RestCallOptions) {
-		let url = `/api${path}`;
+		let url = `${base}/api${path}`;
 
 		if (options?.queryParameters) {
 			const urlSearchParams = new URLSearchParams();
