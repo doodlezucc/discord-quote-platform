@@ -1,6 +1,6 @@
 import { building } from '$app/environment';
 import { DISCORD_BOT_TOKEN } from '$env/static/private';
-import { Client, Events, GatewayIntentBits, type Guild, type Message } from 'discord.js';
+import { Client, Events, GatewayIntentBits, type Message } from 'discord.js';
 import { eq } from 'drizzle-orm';
 import { db } from '../db';
 import * as table from '../db/schema';
@@ -33,16 +33,50 @@ if (!building) {
 export class Bot {
 	readonly guildStates = new Map<string, GuildState>();
 
-	constructor(readonly client: Client<true>) {
-		this.initialize();
-	}
+	constructor(readonly client: Client<true>) {}
 
-	private async initialize() {
-		const allJoinedGuilds = await db.select({ id: table.guild.id }).from(table.guild);
+	async initialize() {
+		const dbRegisteredGuilds = await db.select({ id: table.guild.id }).from(table.guild);
 
-		for (const guild of allJoinedGuilds) {
+		for (const guild of dbRegisteredGuilds) {
 			await this.initializeGuildState(guild.id);
 		}
+
+		const registeredGuildIds = new Set(dbRegisteredGuilds.map((guild) => guild.id));
+		const joinedGuildIds = new Set(await this.fetchAllJoinedGuildIds());
+
+		const newlyJoinedGuildIds = joinedGuildIds.difference(registeredGuildIds);
+		for (const joinedGuildId of newlyJoinedGuildIds) {
+			await this.onAddedToGuild(joinedGuildId);
+		}
+
+		const newlyLeftGuildIds = registeredGuildIds.difference(joinedGuildIds);
+		for (const leftGuildId of newlyLeftGuildIds) {
+			await this.onRemovedFromGuild(leftGuildId);
+		}
+	}
+
+	private async fetchAllJoinedGuildIds() {
+		const PAGE_SIZE = 200;
+
+		let pageResults = await client.guilds.fetch({ limit: PAGE_SIZE });
+		let totalResults = pageResults;
+
+		while (pageResults.size === PAGE_SIZE) {
+			pageResults = await client.guilds.fetch({
+				limit: PAGE_SIZE,
+				after: totalResults.lastKey()
+			});
+
+			totalResults = totalResults.merge(
+				pageResults,
+				(guild) => ({ keep: true, value: guild }),
+				(guild) => ({ keep: true, value: guild }),
+				(guildInA) => ({ keep: true, value: guildInA })
+			);
+		}
+
+		return totalResults.map((_, guildId) => guildId);
 	}
 
 	private async initializeGuildState(guildId: string) {
@@ -60,30 +94,30 @@ export class Bot {
 		}
 	}
 
-	async onAddedToGuild(guild: Guild) {
+	async onAddedToGuild(guildId: string) {
 		console.log('Added to a guild');
-		await db.insert(table.guild).values({ id: guild.id });
+		await db.insert(table.guild).values({ id: guildId });
 
-		await this.initializeGuildState(guild.id);
+		await this.initializeGuildState(guildId);
 	}
 
-	async onRemovedFromGuild(guild: Guild) {
+	async onRemovedFromGuild(guildId: string) {
 		console.log('Removed from a guild');
-		await db.delete(table.guild).where(eq(table.guild.id, guild.id));
+		await db.delete(table.guild).where(eq(table.guild.id, guildId));
 
-		// this.forgetGuild(guild.id);
+		this.guildStates.delete(guildId);
+		// this.forgetGuild(guildId);
 	}
 }
 
 export const bot = new Promise<Bot>((resolve) => {
 	client.once(Events.ClientReady, async (client) => {
 		console.log('Logged in as', client.user.tag);
-		const guilds = await client.guilds.fetch({});
-		console.log(guilds.size, 'guilds');
 
-		// TODO: Add newly joined guilds to database, remove kicked guilds
+		const bot = new Bot(client);
+		await bot.initialize();
 
-		resolve(new Bot(client));
+		resolve(bot);
 	});
 });
 
@@ -94,7 +128,7 @@ client.on(Events.GuildCreate, async (guild) => {
 	});
 
 	if (guildRow === undefined) {
-		(await bot).onAddedToGuild(guild);
+		(await bot).onAddedToGuild(guild.id);
 	}
 });
 
@@ -105,7 +139,7 @@ client.on(Events.GuildDelete, async (guild) => {
 	});
 
 	if (guildRow !== undefined) {
-		(await bot).onRemovedFromGuild(guild);
+		(await bot).onRemovedFromGuild(guild.id);
 	}
 });
 
