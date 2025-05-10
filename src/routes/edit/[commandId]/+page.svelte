@@ -10,6 +10,7 @@
 		GuildDataSoundSnippetWithOwner
 	} from '$lib/snippets';
 	import type { PageData } from './$types';
+	import DropZone from './DropZone.svelte';
 	import Sound from './Sound.svelte';
 	import TitleBar from './TitleBar.svelte';
 
@@ -67,6 +68,12 @@
 			showErrorDialog({ message: `Failed to delete sound. ${err}` });
 		}
 	}
+
+	async function onDropFiles(files: File[]) {
+		for (const file of files) {
+			await createNewSoundFromFile(file);
+		}
+	}
 </script>
 
 <svelte:head>
@@ -75,34 +82,36 @@
 
 <Header userInfo={{ username: data.username }} />
 
-<Content>
-	<TitleBar
-		bind:title={commandName}
-		guildName={data.command.guildName}
-		soundCount={sounds.length}
-		handleSave={patchCommand}
-		handleDelete={deleteCommand}
-	/>
+<DropZone onDrop={onDropFiles}>
+	<Content>
+		<TitleBar
+			bind:title={commandName}
+			guildName={data.command.guildName}
+			soundCount={sounds.length}
+			handleSave={patchCommand}
+			handleDelete={deleteCommand}
+		/>
 
-	<div class="sounds">
-		{#each sounds as sound (sound.id)}
-			<Sound
-				{...sound}
-				bind:name={sound.name}
-				bind:keywords={sound.keywords}
-				isEditable={sound.createdBy.id === data.member.id}
-				handlePatch={(patch) => patchSound(sound, patch)}
-				handleDelete={() => deleteSound(sound)}
-			/>
-		{:else}
-			<p class="empty-note">No sounds have been added yet.</p>
-		{/each}
-	</div>
+		<div class="sounds">
+			{#each sounds as sound (sound.id)}
+				<Sound
+					{...sound}
+					bind:name={sound.name}
+					bind:keywords={sound.keywords}
+					isEditable={sound.createdBy.id === data.member.id}
+					handlePatch={(patch) => patchSound(sound, patch)}
+					handleDelete={() => deleteSound(sound)}
+				/>
+			{:else}
+				<p class="empty-note">No sounds have been added yet.</p>
+			{/each}
+		</div>
 
-	<div class="actions">
-		<FileButton onPickFile={createNewSoundFromFile}>Add Sound</FileButton>
-	</div>
-</Content>
+		<div class="actions">
+			<FileButton onPickFile={createNewSoundFromFile}>Add Sound</FileButton>
+		</div>
+	</Content>
+</DropZone>
 
 <style lang="scss">
 	@use '$lib/style/scheme';
