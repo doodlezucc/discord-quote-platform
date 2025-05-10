@@ -31,3 +31,19 @@ export function describeMimeType(type: string): MimeTypeDescription | undefined 
 		return undefined;
 	}
 }
+
+export function findMimeTypeForExtension(fileExtension: string) {
+	for (const [mimeType, description] of Object.entries(MIME_TYPES)) {
+		if (typeof description === 'string') {
+			if (description === fileExtension) {
+				return mimeType;
+			}
+		} else {
+			if (description.extension === fileExtension) {
+				return mimeType;
+			}
+		}
+	}
+
+	return undefined;
+}

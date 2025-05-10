@@ -16,7 +16,7 @@ interface PartialAsset {
 export class AssetManager {
 	private readonly directoryName = 'user-media';
 	readonly rootDirFromFrontend: string = `${base}/${this.directoryName}`;
-	readonly rootDirFromBackend: string = `./static/${this.directoryName}`;
+	readonly rootDirFromBackend: string = `./${this.directoryName}`;
 
 	constructor() {
 		this.createStaticDirectory();

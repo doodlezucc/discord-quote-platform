@@ -1,3 +1,4 @@
+import { building } from '$app/environment';
 import { DISCORD_BOT_TOKEN } from '$env/static/private';
 import { Client, Events, GatewayIntentBits, type Guild, type Message } from 'discord.js';
 import { eq } from 'drizzle-orm';
@@ -24,7 +25,10 @@ const client = new Client({
 		GatewayIntentBits.GuildVoiceStates
 	]
 });
-globalThis.__discordClient = client;
+
+if (!building) {
+	globalThis.__discordClient = client;
+}
 
 export class Bot {
 	readonly guildStates = new Map<string, GuildState>();
@@ -110,4 +114,6 @@ client.on(Events.MessageCreate, async (message) => {
 	(await bot).guildStates.get(guildMessage.guildId)?.processMessage(guildMessage);
 });
 
-client.login(DISCORD_BOT_TOKEN);
+if (!building) {
+	client.login(DISCORD_BOT_TOKEN);
+}
