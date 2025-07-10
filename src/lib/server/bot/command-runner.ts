@@ -63,7 +63,7 @@ export class CommandRunner {
 		const rawAudioStream = createReadStream(soundFilePath);
 		const inputStream = pipeToEffectProcessed(rawAudioStream, 'ogg', 'ogg', {
 			clippingThreshold: 0.3,
-			volume: 0.125
+			volume: 0.5
 		});
 
 		const resource = createAudioResource(inputStream, {
