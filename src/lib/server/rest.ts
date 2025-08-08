@@ -1,3 +1,4 @@
+import type { RouteId as AppRouteId } from '$app/types';
 import { error, type RequestEvent, type RequestHandler } from '@sveltejs/kit';
 import { REST as DiscordRest, Routes, type RESTGetAPICurrentUserGuildsResult } from 'discord.js';
 import { z, type ZodObject } from 'zod';
@@ -84,19 +85,19 @@ export class RestScope {
 
 interface ExtendedRequestEvent<
 	Params extends Record<string, string>,
-	RouteId extends string | null = string | null
+	RouteId extends AppRouteId | null = AppRouteId | null
 > extends RequestEvent<Params, RouteId> {
 	rest: RestScope;
 }
 
 type ExtendedRequestHandler<
 	Params extends Record<string, string>,
-	RouteId extends string | null = string | null
+	RouteId extends AppRouteId | null = AppRouteId | null
 > = (event: ExtendedRequestEvent<Params, RouteId>) => Promise<Response>;
 
 export function REST<
 	Params extends Record<string, string>,
-	RouteId extends string | null = string | null
+	RouteId extends AppRouteId | null = AppRouteId | null
 >(handle: ExtendedRequestHandler<Params, RouteId>): RequestHandler<Params, RouteId> {
 	return async (event) => {
 		let restScope: RestScope | undefined = undefined;
