@@ -1,15 +1,21 @@
 import { eq } from 'drizzle-orm';
-import Fuse from 'fuse.js';
+import Fuse, { type FuseResult } from 'fuse.js';
 import { db } from '../db';
 import * as table from '../db/schema';
 import { Ring } from '../util/ring';
 import { shuffleArray } from '../util/shuffle-array';
 
-interface DatabaseSound {
+export interface DatabaseSound {
 	id: string;
 	name: string;
 	keywords: string;
 	assetPath: string | null;
+}
+
+interface SearchableSound {
+	source: DatabaseSound;
+	name: string;
+	keywords: string[];
 }
 
 interface Sound {
@@ -88,7 +94,7 @@ export class GuildQueryProcessor {
 			.where(eq(table.sound.commandId, commandId))
 			.leftJoin(table.asset, eq(table.asset.id, table.sound.assetId));
 
-		const matchingSounds = this.filterMatchingSounds(allSounds, query);
+		const matchingSounds = this.listMatchingSounds(allSounds, query);
 
 		if (matchingSounds.length === 0) {
 			return undefined;
@@ -97,20 +103,40 @@ export class GuildQueryProcessor {
 		return this.registerNewRing(queryId, matchingSounds);
 	}
 
-	private filterMatchingSounds(sounds: DatabaseSound[], query?: string): DatabaseSound[] {
+	searchMatchingSounds(sounds: DatabaseSound[], query: string): FuseResult<SearchableSound>[] {
+		const searchableSounds = sounds.map<SearchableSound>((sound) => ({
+			source: sound,
+			name: sound.name,
+			keywords: sound.keywords.split(/\s+/gm)
+		}));
+
+		const fuse = new Fuse(searchableSounds, {
+			keys: ['name', 'keywords'],
+			includeScore: true,
+			ignoreFieldNorm: true
+		});
+
+		const results = fuse.search(query).filter((result) => result.score! < SEARCH_RESULT_THRESHOLD);
+
+		const similarScoreBucketMapping = Object.groupBy(results, ({ score }) =>
+			Math.round(score! * 100)
+		);
+		const similarScoreBuckets = Object.values(similarScoreBucketMapping).map((bucket) => bucket!);
+
+		for (const bucket of similarScoreBuckets) {
+			shuffleArray(bucket!);
+		}
+
+		return similarScoreBuckets.reduce((result, bucket) => [...result, ...bucket!], []);
+	}
+
+	private listMatchingSounds(sounds: DatabaseSound[], query?: string): DatabaseSound[] {
 		if (!query) {
 			return sounds;
 		}
 
-		const fuse = new Fuse(sounds, {
-			keys: ['name', 'keywords'],
-			includeScore: true
-		});
-		const searchResults = fuse.search(query);
-
-		return searchResults
-			.filter((result) => result.score! < SEARCH_RESULT_THRESHOLD)
-			.map((result) => result.item);
+		const searchResults = this.searchMatchingSounds(sounds, query);
+		return searchResults.map((result) => result.item.source);
 	}
 
 	private registerNewRing(queryId: string, dbSounds: DatabaseSound[]) {
@@ -118,8 +144,6 @@ export class GuildQueryProcessor {
 			id: sound.id,
 			assetPath: sound.assetPath!
 		}));
-
-		shuffleArray(sounds);
 
 		const ring = new Ring(sounds);
 
