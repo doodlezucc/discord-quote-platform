@@ -18,7 +18,7 @@ export const zquery = {
 		const requiredType = z.string().transform((value) => ['', '1', 'True', 'true'].includes(value));
 
 		if (options !== undefined) {
-			return requiredType.default(options.default ? 'true' : 'false');
+			return requiredType.default(options.default);
 		}
 
 		return requiredType;
