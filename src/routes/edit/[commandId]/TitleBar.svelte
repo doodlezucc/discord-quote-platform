@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import Button from '$lib/components/Button.svelte';
 	import { useErrorDialogs } from '$lib/components/ErrorDialogWrapper.svelte';
 	import Input from '$lib/components/Input.svelte';
@@ -51,7 +51,7 @@
 		isDeleting = true;
 		try {
 			await handleDelete();
-			await goto(`${base}/`);
+			await goto(resolve('/'));
 		} catch (err) {
 			showErrorDialog({ message: `Failed to delete command. ${err}` });
 		} finally {
@@ -63,7 +63,7 @@
 </script>
 
 <div class="title" class:editing={isEditingTitle}>
-	<a class="back-button" href="{base}/">
+	<a class="back-button" href={resolve('/')}>
 		<Button icon={ArrowLeftIcon} iconStroke outline buttonProps={{ tabindex: -1 }}>Guilds</Button>
 	</a>
 

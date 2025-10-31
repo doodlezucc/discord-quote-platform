@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import Chip from '$lib/components/Chip.svelte';
 
 	interface Props {
@@ -11,7 +11,7 @@
 	let { commandId, name, soundCount }: Props = $props();
 </script>
 
-<a href={`${base}/edit/${commandId}`}>
+<a href={resolve('/edit/[commandId]', { commandId: commandId })}>
 	<span>{name}</span>
 
 	<Chip>{soundCount}</Chip>

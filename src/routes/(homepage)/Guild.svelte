@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import { PUBLIC_DISCORD_CLIENT_ID } from '$env/static/public';
 	import Button from '$lib/components/Button.svelte';
 	import { rest } from '$lib/rest';
@@ -28,7 +28,7 @@
 		newCommandName = '';
 		isTypingNewCommand = false;
 
-		goto(`${base}/edit/${command.id}`);
+		goto(resolve('/edit/[commandId]', { commandId: command.id }));
 	}
 </script>
 

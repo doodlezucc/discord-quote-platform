@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { base } from '$app/paths';
+	import { resolve } from '$app/paths';
 	import Button from './Button.svelte';
 	import VolumeSlider from './VolumeSlider.svelte';
 
@@ -13,7 +13,7 @@
 </script>
 
 <header>
-	<a href="{base}/"><h1>Quotebot</h1></a>
+	<a href={resolve('/')}><h1>Quotebot</h1></a>
 
 	{#if userInfo}
 		<div class="trailing">
