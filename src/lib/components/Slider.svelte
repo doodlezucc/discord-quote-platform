@@ -17,6 +17,8 @@
 		describeValue,
 		background = 'light',
 		onchange,
+		// False positive warning, see https://github.com/sveltejs/eslint-plugin-svelte/issues/1478
+		// eslint-disable-next-line no-useless-assignment
 		isDragging: readOnlyIsDragging = $bindable(false)
 	}: Props = $props();
 

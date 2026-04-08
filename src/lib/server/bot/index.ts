@@ -9,6 +9,7 @@ import { GuildState } from './guild-state';
 // This is a workaround to clean up whenever hot-reloading bot relevant source code
 // Ideally, you'd use import.meta.hot.dispose(...) from vite, but there are currently
 // issues with SvelteKit: https://github.com/sveltejs/kit/issues/13359
+// eslint-disable-next-line no-shadow-restricted-names
 declare const globalThis: {
 	__discordClient?: Client;
 };
