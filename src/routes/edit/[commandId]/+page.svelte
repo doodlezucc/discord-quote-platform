@@ -19,7 +19,12 @@
 	let guildId = $derived(data.command.guildId);
 	let commandId = $derived(data.command.id);
 
+	// Only the INITIAL value of "data.command.name" is relevant here.
+	// svelte-ignore state_referenced_locally
 	let commandName = $state(data.command.name);
+
+	// Only the INITIAL value of "data.sounds" is relevant here.
+	// svelte-ignore state_referenced_locally
 	let sounds = $state(
 		data.sounds.toSorted((a, b) => {
 			const aIsEditable = a.createdBy.id === data.member.id;
