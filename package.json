@@ -19,8 +19,8 @@
 		"db:studio": "drizzle-kit studio"
 	},
 	"devDependencies": {
-		"@eslint/compat": "^1.4.1",
-		"@eslint/js": "^9.39.4",
+		"@eslint/compat": "^2.0.5",
+		"@eslint/js": "^10.0.1",
 		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/kit": "^2.57.0",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
@@ -28,9 +28,9 @@
 		"@testing-library/svelte": "^5.3.1",
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/fluent-ffmpeg": "^2.1.28",
-		"@types/node": "^24.12.2",
+		"@types/node": "^25.5.2",
 		"drizzle-kit": "^0.31.10",
-		"eslint": "^9.39.4",
+		"eslint": "^10.2.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.17.0",
 		"globals": "^16.5.0",
