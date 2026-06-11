@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ErrorDialogWrapper from '$lib/components/ErrorDialogWrapper.svelte';
 	import '$lib/style/index.scss';
-	import '@fontsource-variable/public-sans';
+	import '@fontsource-variable/public-sans/wght.css';
 	import type { Snippet } from 'svelte';
 	import { PortalOverlay } from 'svelte-tether';
 
