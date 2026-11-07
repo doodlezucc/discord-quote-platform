@@ -94,7 +94,7 @@ export class GuildQueryProcessor {
 			.where(eq(table.sound.commandId, commandId))
 			.leftJoin(table.asset, eq(table.asset.id, table.sound.assetId));
 
-		const matchingSounds = this.listMatchingSounds(allSounds, query);
+		const matchingSounds = this.listMatchingSoundsSortedByRelevance(allSounds, query);
 
 		if (matchingSounds.length === 0) {
 			return undefined;
@@ -103,7 +103,10 @@ export class GuildQueryProcessor {
 		return this.registerNewRing(queryId, matchingSounds);
 	}
 
-	searchMatchingSounds(sounds: DatabaseSound[], query: string): FuseResult<SearchableSound>[] {
+	searchMatchingSoundsSortedByRelevance(
+		sounds: DatabaseSound[],
+		query: string
+	): FuseResult<SearchableSound>[] {
 		const searchableSounds = sounds.map<SearchableSound>((sound) => ({
 			source: sound,
 			name: sound.name,
@@ -121,21 +124,27 @@ export class GuildQueryProcessor {
 		const similarScoreBucketMapping = Object.groupBy(results, ({ score }) =>
 			Math.round(score! * 100)
 		);
-		const similarScoreBuckets = Object.values(similarScoreBucketMapping).map((bucket) => bucket!);
+		const similarScoreBuckets = Object.values(similarScoreBucketMapping).filter(
+			(bucket) => bucket !== undefined
+		);
 
 		for (const bucket of similarScoreBuckets) {
-			shuffleArray(bucket!);
+			shuffleArray(bucket);
 		}
 
-		return similarScoreBuckets.reduce((result, bucket) => [...result, ...bucket!], []);
+		return similarScoreBuckets.reduce((result, bucket) => [...result, ...bucket], []);
 	}
 
-	private listMatchingSounds(sounds: DatabaseSound[], query?: string): DatabaseSound[] {
+	private listMatchingSoundsSortedByRelevance(
+		sounds: DatabaseSound[],
+		query?: string
+	): DatabaseSound[] {
 		if (!query) {
+			shuffleArray(sounds);
 			return sounds;
 		}
 
-		const searchResults = this.searchMatchingSounds(sounds, query);
+		const searchResults = this.searchMatchingSoundsSortedByRelevance(sounds, query);
 		return searchResults.map((result) => result.item.source);
 	}
 
