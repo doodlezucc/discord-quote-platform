@@ -32,7 +32,6 @@ interface QueryResultBucket {
 // Matches concatenated letters and digits, skips special characters.
 const REGEX_SAFE_WORDS = /[\p{L}\p{N}]+/gu;
 
-const SEARCH_RESULT_THRESHOLD = 0.5;
 const RING_TIMEOUT_MILLISECONDS = 20 * 60 * 1000;
 
 export class GuildQueryProcessor {
@@ -64,15 +63,15 @@ export class GuildQueryProcessor {
 		}
 	}
 
-	async searchForSound(commandId: string, query?: string): Promise<Sound | undefined> {
+	async searchForSound(commandId: string, query?: string): Promise<Sound | null> {
 		const rotatedRing = await this.rotateOrCreateSoundRing(commandId, query);
-		return rotatedRing?.currentItem;
+		return rotatedRing?.currentItem ?? null;
 	}
 
 	private async rotateOrCreateSoundRing(
 		commandId: string,
 		query?: string
-	): Promise<Ring<Sound> | undefined> {
+	): Promise<Ring<Sound> | null> {
 		query = query?.trim();
 
 		const queryId = `${commandId}${query ?? ''}`;
@@ -90,7 +89,7 @@ export class GuildQueryProcessor {
 		const matchingSounds = await this.findMatchingSounds(commandId, query);
 
 		if (matchingSounds.length === 0) {
-			return undefined;
+			return null;
 		}
 
 		return this.registerNewRing(queryId, matchingSounds);
@@ -105,7 +104,7 @@ export class GuildQueryProcessor {
 	}
 
 	private async listAllSounds(commandId: string): Promise<DatabaseSound[]> {
-		const results = await db
+		const result = await db
 			.select({
 				id: table.sound.id,
 				name: table.sound.name,
@@ -116,8 +115,25 @@ export class GuildQueryProcessor {
 			.where(eq(table.sound.commandId, commandId))
 			.leftJoin(table.asset, eq(table.asset.id, table.sound.assetId));
 
-		shuffleArray(results);
-		return results;
+		shuffleArray(result);
+		return result;
+	}
+
+	private async searchMatchingSounds(commandId: string, query: string): Promise<DatabaseSound[]> {
+		const sqlSearchPattern = this.buildSqlSearchPattern(query);
+		if (!sqlSearchPattern) return [];
+
+		const searchResults = await db
+			.select(DRIZZLE_SELECT_FROM_SOUND)
+			.from(soundSearchFts)
+			.innerJoin(table.sound, eq(table.sound.id, soundSearchFts.id))
+			.where(
+				and(eq(table.sound.commandId, commandId), sql`${soundSearchFts} MATCH ${sqlSearchPattern}`)
+			)
+			.leftJoin(table.asset, eq(table.asset.id, table.sound.assetId));
+
+		shuffleArray(searchResults);
+		return searchResults;
 	}
 
 	private buildSqlSearchPattern(input: string): string | null {
@@ -126,41 +142,6 @@ export class GuildQueryProcessor {
 		if (terms.length === 0) return null;
 
 		return terms.map((term) => `"${term}"*`).join(' ');
-	}
-
-	private async searchMatchingSounds(commandId: string, query: string): Promise<DatabaseSound[]> {
-		const sqlSearchPattern = this.buildSqlSearchPattern(query);
-		if (!sqlSearchPattern) return [];
-
-		const weightName = 1.0;
-		const weightKeywords = 1.0;
-
-		const score = sql<number>`bm25(${soundSearchFts}, ${weightName}, ${weightKeywords})`;
-
-		const searchResults = await db
-			.select({ ...DRIZZLE_SELECT_FROM_SOUND, score })
-			.from(soundSearchFts)
-			.innerJoin(table.sound, eq(table.sound.id, soundSearchFts.id))
-			.where(
-				and(eq(table.sound.commandId, commandId), sql`${soundSearchFts} MATCH ${sqlSearchPattern}`)
-			)
-			.leftJoin(table.asset, eq(table.asset.id, table.sound.assetId))
-			.orderBy(score);
-
-		const results = searchResults.filter((result) => result.score! < SEARCH_RESULT_THRESHOLD);
-
-		const similarScoreBucketMapping = Object.groupBy(results, ({ score }) =>
-			Math.round(score! * 100)
-		);
-		const similarScoreBuckets = Object.values(similarScoreBucketMapping).filter(
-			(bucket) => bucket !== undefined
-		);
-
-		for (const bucket of similarScoreBuckets) {
-			shuffleArray(bucket);
-		}
-
-		return similarScoreBuckets.reduce((result, bucket) => [...result, ...bucket], []);
 	}
 
 	private registerNewRing(queryId: string, dbSounds: DatabaseSound[]) {
