@@ -25,14 +25,7 @@
 
 	// Only the INITIAL value of "data.sounds" is relevant here.
 	// svelte-ignore state_referenced_locally
-	let sounds = $state(
-		data.sounds.toSorted((a, b) => {
-			const aIsEditable = a.createdBy.id === data.member.id;
-			const bIsEditable = b.createdBy.id === data.member.id;
-
-			return (bIsEditable ? 1 : 0) - (aIsEditable ? 1 : 0);
-		})
-	);
+	let sounds = $state(data.sounds);
 
 	const { showErrorDialog } = useErrorDialogs();
 
@@ -48,7 +41,7 @@
 	async function createNewSoundFromFile(file: File) {
 		try {
 			const createdSound = await rest.guildCommandSoundPost(guildId, commandId, file);
-			sounds.push({ ...createdSound, createdBy: data.member });
+			sounds.unshift({ ...createdSound, createdBy: data.member });
 		} catch (err) {
 			showErrorDialog({ message: `${err}` });
 		}
@@ -101,8 +94,8 @@
 			{#each sounds as sound (sound.id)}
 				<Sound
 					{...sound}
-					bind:name={sound.name}
-					bind:keywords={sound.keywords}
+					name={sound.name}
+					keywords={sound.keywords}
 					isEditable={sound.createdBy.id === data.member.id}
 					handlePatch={(patch) => patchSound(sound, patch)}
 					handleDelete={() => deleteSound(sound)}
