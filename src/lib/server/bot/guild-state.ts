@@ -19,7 +19,8 @@ export class GuildState {
 		if (message.member!.user.bot) return;
 
 		const content = message.cleanContent;
-		const [commandName, query = undefined] = content.split(/\s+/gm, 2);
+		const [commandName, ...args] = content.split(/\s+/gm);
+		const query = args.length > 0 ? args.join(' ') : undefined;
 
 		const [command = undefined] = await db
 			.select({ id: table.command.id })
