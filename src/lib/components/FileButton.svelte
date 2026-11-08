@@ -1,13 +1,15 @@
 <script lang="ts">
+	import type { Icon as IconType } from '@lucide/svelte';
 	import type { Snippet } from 'svelte';
 
 	interface Props {
+		icon?: typeof IconType;
 		outline?: boolean;
 		onPickFile: (file: File) => void;
 		children: Snippet;
 	}
 
-	let { outline = false, onPickFile, children }: Props = $props();
+	let { icon: Icon, outline = false, onPickFile, children }: Props = $props();
 
 	let files = $state<FileList>();
 	let pickedFile = $derived(files ? files.item(0) : null);
@@ -20,6 +22,10 @@
 </script>
 
 <label class="button" class:outlined={outline}>
+	{#if Icon}
+		<Icon size={20} aria-hidden />
+	{/if}
+
 	{@render children()}
 
 	<input type="file" bind:files />
@@ -37,7 +43,6 @@
 
 	label {
 		@extend %button;
-		display: inline-block;
 
 		&:has(:focus-visible) {
 			outline: 2px solid white;

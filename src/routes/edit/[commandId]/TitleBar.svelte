@@ -3,12 +3,14 @@
 	import { resolve } from '$app/paths';
 	import Button from '$lib/components/Button.svelte';
 	import { useErrorDialogs } from '$lib/components/ErrorDialogWrapper.svelte';
+	import FileButton from '$lib/components/FileButton.svelte';
 	import Input from '$lib/components/Input.svelte';
 	import Tooltip from '$lib/components/Tooltip.svelte';
 	import type { GuildDataCommandPatch } from '$lib/snippets';
 	import ArrowLeftIcon from '@lucide/svelte/icons/arrow-left';
 	import SettingsIcon from '@lucide/svelte/icons/settings';
 	import TrashIcon from '@lucide/svelte/icons/trash';
+	import PlusIcon from '@lucide/svelte/icons/upload';
 
 	interface Props {
 		title: string;
@@ -16,9 +18,17 @@
 		soundCount: number;
 		handleSave: (patch: GuildDataCommandPatch) => Promise<void>;
 		handleDelete: () => Promise<void>;
+		handleCreateSound: (file: File) => Promise<void>;
 	}
 
-	let { title = $bindable(), guildName, soundCount, handleSave, handleDelete }: Props = $props();
+	let {
+		title = $bindable(),
+		guildName,
+		soundCount,
+		handleSave,
+		handleDelete,
+		handleCreateSound
+	}: Props = $props();
 
 	let isEditingTitle = $state(false);
 	let editingTitle = $state(title);
@@ -84,6 +94,7 @@
 	<div class="title-actions">
 		{#if !isEditingTitle}
 			<Button icon={SettingsIcon} iconStroke outline onclick={onClickEdit}>Edit Command</Button>
+			<FileButton icon={PlusIcon} onPickFile={handleCreateSound}>Upload</FileButton>
 		{:else}
 			<Tooltip
 				tooltip={soundCount > 0

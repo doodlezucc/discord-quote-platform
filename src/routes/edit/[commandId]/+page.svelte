@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Content from '$lib/components/Content.svelte';
 	import { useErrorDialogs } from '$lib/components/ErrorDialogWrapper.svelte';
-	import FileButton from '$lib/components/FileButton.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { rest } from '$lib/rest';
 	import type {
@@ -11,7 +10,7 @@
 	} from '$lib/snippets';
 	import type { PageData } from './$types';
 	import DropZone from './DropZone.svelte';
-	import Sound from './Sound.svelte';
+	import SoundList from './SoundList.svelte';
 	import TitleBar from './TitleBar.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -88,50 +87,9 @@
 			soundCount={sounds.length}
 			handleSave={patchCommand}
 			handleDelete={deleteCommand}
+			handleCreateSound={createNewSoundFromFile}
 		/>
 
-		<div class="sounds">
-			{#each sounds as sound (sound.id)}
-				<Sound
-					{...sound}
-					name={sound.name}
-					keywords={sound.keywords}
-					isEditable={sound.createdBy.id === data.member.id}
-					handlePatch={(patch) => patchSound(sound, patch)}
-					handleDelete={() => deleteSound(sound)}
-				/>
-			{:else}
-				<p class="empty-note">No sounds have been added yet.</p>
-			{/each}
-		</div>
-
-		<div class="actions">
-			<FileButton onPickFile={createNewSoundFromFile}>Add Sound</FileButton>
-		</div>
+		<SoundList userMemberId={data.member.id} {sounds} {patchSound} {deleteSound} />
 	</Content>
 </DropZone>
-
-<style lang="scss">
-	@use '$lib/style/scheme';
-
-	.actions {
-		display: flex;
-		justify-content: end;
-		padding-top: 0;
-	}
-
-	.sounds {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		margin-bottom: 1em;
-	}
-
-	.sounds .empty-note {
-		text-align: center;
-		padding: 8px;
-		border: 2px dashed scheme.color('separator');
-		border-radius: 8px;
-		margin: 0;
-	}
-</style>
