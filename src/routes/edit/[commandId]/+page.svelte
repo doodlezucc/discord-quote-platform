@@ -87,9 +87,14 @@
 			soundCount={sounds.length}
 			handleSave={patchCommand}
 			handleDelete={deleteCommand}
-			handleCreateSound={createNewSoundFromFile}
 		/>
 
-		<SoundList userMemberId={data.member.id} {sounds} {patchSound} {deleteSound} />
+		<SoundList
+			userMemberId={data.member.id}
+			{sounds}
+			handleCreateSound={createNewSoundFromFile}
+			handlePatchSound={patchSound}
+			handleDeleteSound={deleteSound}
+		/>
 	</Content>
 </DropZone>

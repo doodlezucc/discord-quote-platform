@@ -1,19 +1,30 @@
 <script lang="ts">
+	import FileButton from '$lib/components/FileButton.svelte';
+	import SearchBar from '$lib/components/SearchBar.svelte';
 	import type { GuildDataSoundPatch, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
 	import Sound from './Sound.svelte';
 
 	interface Props {
 		userMemberId: string;
 		sounds: GuildDataSoundSnippetWithOwner[];
-		patchSound: (
+		handleCreateSound: (file: File) => Promise<void>;
+		handlePatchSound: (
 			sound: GuildDataSoundSnippetWithOwner,
 			patch: GuildDataSoundPatch
 		) => Promise<void>;
-		deleteSound: (sound: GuildDataSoundSnippetWithOwner) => Promise<void>;
+		handleDeleteSound: (sound: GuildDataSoundSnippetWithOwner) => Promise<void>;
 	}
 
-	let { userMemberId, sounds, patchSound, deleteSound }: Props = $props();
+	let { userMemberId, sounds, handleCreateSound, handlePatchSound, handleDeleteSound }: Props =
+		$props();
+
+	let query = $state('');
 </script>
+
+<div class="actions">
+	<SearchBar bind:query name="search-sounds" placeholder="Search..." />
+	<FileButton onPickFile={handleCreateSound}>Upload</FileButton>
+</div>
 
 <div class="sounds">
 	{#each sounds as sound (sound.id)}
@@ -22,8 +33,8 @@
 			name={sound.name}
 			keywords={sound.keywords}
 			isEditable={sound.createdBy.id === userMemberId}
-			handlePatch={(patch) => patchSound(sound, patch)}
-			handleDelete={() => deleteSound(sound)}
+			handlePatch={(patch) => handlePatchSound(sound, patch)}
+			handleDelete={() => handleDeleteSound(sound)}
 		/>
 	{:else}
 		<p class="empty-note">No sounds have been added yet.</p>
@@ -32,6 +43,12 @@
 
 <style lang="scss">
 	@use '$lib/style/scheme';
+
+	.actions {
+		display: grid;
+		grid-template-columns: 1fr max-content;
+		gap: 1em;
+	}
 
 	.sounds {
 		display: flex;
