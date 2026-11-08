@@ -10,7 +10,7 @@
 		onSubmit?: (value: string) => void;
 	};
 
-	let { name, placeholder, query: query = $bindable(), onSubmit }: Props = $props();
+	let { name, placeholder, query = $bindable(), onSubmit }: Props = $props();
 
 	let element = $state<HTMLInputElement | HTMLTextAreaElement>();
 
@@ -23,6 +23,10 @@
 		if (ev.key === 'Enter') {
 			ev.preventDefault();
 			submit();
+		} else if (ev.key === 'Escape') {
+			ev.preventDefault();
+			query = '';
+			element!.blur();
 		}
 	}
 
@@ -30,6 +34,8 @@
 		query = '';
 		element!.focus();
 	}
+
+	let hasQuery = $derived(query.length > 0);
 </script>
 
 <div class="search-bar">
@@ -46,8 +52,10 @@
 		onblur={submit}
 	/>
 
-	<div class="clear-button" class:visible={query.length > 0}>
-		<IconButton icon={CircleXIcon} stroke onclick={clear}>Clear</IconButton>
+	<div class="clear-button" class:visible={hasQuery}>
+		<IconButton icon={CircleXIcon} stroke onclick={clear} buttonProps={{ disabled: !hasQuery }}>
+			Clear
+		</IconButton>
 	</div>
 </div>
 

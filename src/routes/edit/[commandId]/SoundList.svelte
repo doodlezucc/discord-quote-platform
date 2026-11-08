@@ -2,6 +2,7 @@
 	import FileButton from '$lib/components/FileButton.svelte';
 	import SearchBar from '$lib/components/SearchBar.svelte';
 	import type { GuildDataSoundPatch, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
+	import Fuse from 'fuse.js';
 	import Sound from './Sound.svelte';
 
 	interface Props {
@@ -19,6 +20,17 @@
 		$props();
 
 	let query = $state('');
+
+	let filteredSounds = $derived.by(() => {
+		const fuse = new Fuse(sounds, {
+			keys: [{ name: 'name' }, { name: 'keywords' }],
+			threshold: 0.3,
+			ignoreLocation: true
+		});
+		const results = fuse.search(query);
+
+		return results.map((result) => result.item);
+	});
 </script>
 
 <div class="actions">
@@ -27,7 +39,7 @@
 </div>
 
 <div class="sounds">
-	{#each sounds as sound (sound.id)}
+	{#each filteredSounds as sound (sound.id)}
 		<Sound
 			{...sound}
 			name={sound.name}
@@ -37,7 +49,11 @@
 			handleDelete={() => handleDeleteSound(sound)}
 		/>
 	{:else}
-		<p class="empty-note">No sounds have been added yet.</p>
+		{#if sounds.length > 0}
+			<p class="empty-note">No matching sounds found. Bummer!</p>
+		{:else}
+			<p class="empty-note">No sounds have been added yet.</p>
+		{/if}
 	{/each}
 </div>
 
@@ -47,14 +63,15 @@
 	.actions {
 		display: grid;
 		grid-template-columns: 1fr max-content;
-		gap: 1em;
+		gap: 16px;
 	}
 
 	.sounds {
 		display: flex;
 		flex-direction: column;
 		gap: 8px;
-		margin-top: 1em;
+		margin-top: 16px;
+		margin-bottom: 3em;
 	}
 
 	.sounds .empty-note {
