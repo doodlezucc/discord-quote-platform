@@ -18,7 +18,7 @@ export function pipeRequestBodyToNormalizedAudio(request: Request, outputFormat:
 			{
 				filter: 'speechnorm',
 				options: {
-					expansion: 40,
+					expansion: 5,
 					compression: 40,
 					threshold: 1,
 					invert: 1,

@@ -37,7 +37,6 @@
 
 	label {
 		@extend %button;
-		display: inline-block;
 
 		&:has(:focus-visible) {
 			outline: 2px solid white;

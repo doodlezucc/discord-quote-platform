@@ -1,5 +1,5 @@
 import type { DiscordGuildMemberSnippet, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { server } from '..';
 import { bot } from '../bot';
 import { db } from '../db';
@@ -10,7 +10,8 @@ export async function fetchSoundSnippets(guildId: string, commandId: string) {
 		.select({ sound: table.sound, assetPath: table.asset.path, createdBy: table.asset.createdBy })
 		.from(table.sound)
 		.where(eq(table.sound.commandId, commandId))
-		.leftJoin(table.asset, eq(table.asset.id, table.sound.assetId));
+		.leftJoin(table.asset, eq(table.asset.id, table.sound.assetId))
+		.orderBy(desc(table.sound.createdAt));
 
 	const relevantUserIds = new Set(entries.map((entry) => entry.createdBy!));
 	const discordGuild = await (await bot).client.guilds.fetch(guildId);

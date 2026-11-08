@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Content from '$lib/components/Content.svelte';
 	import { useErrorDialogs } from '$lib/components/ErrorDialogWrapper.svelte';
-	import FileButton from '$lib/components/FileButton.svelte';
 	import Header from '$lib/components/Header.svelte';
 	import { rest } from '$lib/rest';
 	import type {
@@ -11,7 +10,7 @@
 	} from '$lib/snippets';
 	import type { PageData } from './$types';
 	import DropZone from './DropZone.svelte';
-	import Sound from './Sound.svelte';
+	import SoundList from './SoundList.svelte';
 	import TitleBar from './TitleBar.svelte';
 
 	let { data }: { data: PageData } = $props();
@@ -25,14 +24,7 @@
 
 	// Only the INITIAL value of "data.sounds" is relevant here.
 	// svelte-ignore state_referenced_locally
-	let sounds = $state(
-		data.sounds.toSorted((a, b) => {
-			const aIsEditable = a.createdBy.id === data.member.id;
-			const bIsEditable = b.createdBy.id === data.member.id;
-
-			return (bIsEditable ? 1 : 0) - (aIsEditable ? 1 : 0);
-		})
-	);
+	let sounds = $state(data.sounds);
 
 	const { showErrorDialog } = useErrorDialogs();
 
@@ -48,7 +40,7 @@
 	async function createNewSoundFromFile(file: File) {
 		try {
 			const createdSound = await rest.guildCommandSoundPost(guildId, commandId, file);
-			sounds.push({ ...createdSound, createdBy: data.member });
+			sounds.unshift({ ...createdSound, createdBy: data.member });
 		} catch (err) {
 			showErrorDialog({ message: `${err}` });
 		}
@@ -97,48 +89,12 @@
 			handleDelete={deleteCommand}
 		/>
 
-		<div class="sounds">
-			{#each sounds as sound (sound.id)}
-				<Sound
-					{...sound}
-					bind:name={sound.name}
-					bind:keywords={sound.keywords}
-					isEditable={sound.createdBy.id === data.member.id}
-					handlePatch={(patch) => patchSound(sound, patch)}
-					handleDelete={() => deleteSound(sound)}
-				/>
-			{:else}
-				<p class="empty-note">No sounds have been added yet.</p>
-			{/each}
-		</div>
-
-		<div class="actions">
-			<FileButton onPickFile={createNewSoundFromFile}>Add Sound</FileButton>
-		</div>
+		<SoundList
+			userMemberId={data.member.id}
+			{sounds}
+			handleCreateSound={createNewSoundFromFile}
+			handlePatchSound={patchSound}
+			handleDeleteSound={deleteSound}
+		/>
 	</Content>
 </DropZone>
-
-<style lang="scss">
-	@use '$lib/style/scheme';
-
-	.actions {
-		display: flex;
-		justify-content: end;
-		padding-top: 0;
-	}
-
-	.sounds {
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		margin-bottom: 1em;
-	}
-
-	.sounds .empty-note {
-		text-align: center;
-		padding: 8px;
-		border: 2px dashed scheme.color('separator');
-		border-radius: 8px;
-		margin: 0;
-	}
-</style>
