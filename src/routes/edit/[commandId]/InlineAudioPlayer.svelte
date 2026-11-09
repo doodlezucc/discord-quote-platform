@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { volume } from '$lib/client-state/variables.svelte';
-	import { useAnimationFrameConditional } from '$lib/components/animation-frame.svelte';
 	import Duration, { convertSecondsToDuration } from '$lib/components/Duration.svelte';
 	import IconButton from '$lib/components/IconButton.svelte';
 	import Slider from '$lib/components/Slider.svelte';
@@ -14,37 +13,13 @@
 
 	let { src, onInteracted }: Props = $props();
 
-	let inferCurrentTime = $state(false);
-	let startTime = $state<number>(0);
-	let startTimestamp = $state<number>(0);
-	let currentTime = $state<number>(0);
-
 	let audioPaused = $state(true);
 	let audioCurrentTime = $state<number>(0);
 	let audioDuration = $state<number>(0.01);
 
 	$effect(() => {
-		inferCurrentTime = false;
-		currentTime = audioCurrentTime;
-	});
-
-	$effect(() => {
 		if (!audioPaused) onInteracted();
 	});
-
-	function onPlaybackStart() {
-		startTime = audioCurrentTime;
-		startTimestamp = performance.now();
-		inferCurrentTime = true;
-		onInteracted();
-	}
-
-	useAnimationFrameConditional(
-		() => inferCurrentTime,
-		() => {
-			currentTime = startTime + (performance.now() - startTimestamp) / 1000;
-		}
-	);
 
 	function onKeyDown(ev: KeyboardEvent) {
 		onInteracted();
@@ -72,10 +47,10 @@
 		{audioPaused ? 'Play' : 'Pause'}
 	</IconButton>
 
-	<span aria-label="Current playback time"><Duration seconds={currentTime} /></span>
+	<span aria-label="Current playback time"><Duration seconds={audioCurrentTime} /></span>
 
 	<Slider
-		value={currentTime}
+		value={audioCurrentTime}
 		max={audioDuration}
 		describeValue={convertSecondsToDuration}
 		onchange={(value) => {
@@ -89,7 +64,6 @@
 
 	<audio
 		{src}
-		onplaying={onPlaybackStart}
 		bind:paused={audioPaused}
 		bind:currentTime={audioCurrentTime}
 		bind:duration={audioDuration}
