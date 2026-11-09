@@ -4,6 +4,7 @@
 	import { useErrorDialogs } from '$lib/components/ErrorDialogWrapper.svelte';
 	import IconButton from '$lib/components/IconButton.svelte';
 	import Input from '$lib/components/Input.svelte';
+	import { useDeferredRendering } from '$lib/components/deferred.svelte';
 	import type { GuildDataSoundPatch, GuildDataSoundSnippetWithOwner } from '$lib/snippets';
 	import PencilIcon from '@lucide/svelte/icons/pencil';
 	import TrashIcon from '@lucide/svelte/icons/trash';
@@ -27,6 +28,8 @@
 		keywords = $bindable()
 	}: Props = $props();
 
+	const deferred = useDeferredRendering();
+
 	let editingName = $derived(name);
 	let editingKeywords = $derived(keywords);
 
@@ -44,6 +47,7 @@
 			isExpanded = !isExpanded;
 			nameInput!.focus();
 			container!.scrollIntoView({ behavior: 'smooth', block: 'center' });
+			deferred.keepRendered();
 		}
 	}
 
@@ -90,53 +94,63 @@
 	aria-label="Sound"
 	aria-expanded={isExpanded}
 	bind:this={container}
+	{@attach deferred.attachment}
 >
-	<div class="overview">
-		<InlineAudioPlayer src={mediaPath} />
+	{#if deferred.isVisible}
+		<div class="overview">
+			<InlineAudioPlayer src={mediaPath} onInteracted={() => deferred.keepRendered()} />
 
-		<!-- svelte-ignore a11y_no_static_element_interactions -->
-		<div class="summary" onmousedown={isEditable ? expand : undefined} bind:this={summary}>
-			<Input
-				name="sound-name"
-				placeholder="Name..."
-				type="text"
-				bind:value={editingName}
-				bind:this={nameInput}
-				readonly={!isExpanded}
-			/>
+			<!-- svelte-ignore a11y_no_static_element_interactions -->
+			<div class="summary" onmousedown={isEditable ? expand : undefined} bind:this={summary}>
+				<Input
+					name="sound-name"
+					placeholder="Name..."
+					type="text"
+					bind:value={editingName}
+					bind:this={nameInput}
+					readonly={!isExpanded}
+				/>
 
-			<div class="keywords" role="list" aria-label="Keywords">
-				{#each separateKeywords as keyword, index (`${keyword}${index}`)}
-					<Chip>{keyword}</Chip>
-				{/each}
-			</div>
-
-			{#if !isExpanded}
-				<div class="access-icon">
-					{#if isEditable}
-						<IconButton icon={PencilIcon} stroke onclick={expand}>Edit</IconButton>
-					{:else}
-						<IconButton icon={UserLockIcon} stroke>No Access</IconButton>
-					{/if}
+				<div class="keywords" role="list" aria-label="Keywords">
+					{#each separateKeywords as keyword, index (`${keyword}${index}`)}
+						<Chip>{keyword}</Chip>
+					{/each}
 				</div>
 
-				<UserAvatar {...createdBy} />
-			{/if}
-		</div>
-	</div>
+				{#if !isExpanded}
+					<div class="access-icon">
+						{#if isEditable}
+							<IconButton icon={PencilIcon} stroke onclick={expand}>Edit</IconButton>
+						{:else}
+							<IconButton icon={UserLockIcon} stroke>No Access</IconButton>
+						{/if}
+					</div>
 
-	<div class="details" inert={!isExpanded}>
-		<Input name="sound-keywords" placeholder="Keywords..." multiline bind:value={editingKeywords} />
-
-		<div class="actions">
-			<Button onclick={handleDelete} outline icon={TrashIcon} iconStroke iconColor="primary">
-				Delete
-			</Button>
-			<div class="expand"></div>
-			<Button onclick={discardChanges} outline>Discard Changes</Button>
-			<Button onclick={saveChanges} disabled={isSaving}>Save</Button>
+					<UserAvatar {...createdBy} />
+				{/if}
+			</div>
 		</div>
-	</div>
+
+		{#if isEditable}
+			<div class="details" inert={!isExpanded}>
+				<Input
+					name="sound-keywords"
+					placeholder="Keywords..."
+					multiline
+					bind:value={editingKeywords}
+				/>
+
+				<div class="actions">
+					<Button onclick={handleDelete} outline icon={TrashIcon} iconStroke iconColor="primary">
+						Delete
+					</Button>
+					<div class="expand"></div>
+					<Button onclick={discardChanges} outline>Discard Changes</Button>
+					<Button onclick={saveChanges} disabled={isSaving}>Save</Button>
+				</div>
+			</div>
+		{/if}
+	{/if}
 </div>
 
 <style lang="scss">
@@ -149,6 +163,7 @@
 		border: 1px solid scheme.color('separator');
 		border-radius: 12px;
 		transition: background-color 0.2s;
+		min-height: 58px;
 
 		&[aria-expanded='false'] {
 			.summary > :global(*) {
@@ -177,11 +192,13 @@
 		display: grid;
 		padding-left: 12px;
 		grid-template-columns: min(300px, 30vw) 1fr;
-		align-items: center;
+		align-items: stretch;
+		flex: 1;
 	}
 
 	.summary {
 		display: grid;
+		align-items: center;
 		grid-template-columns: 1fr minmax(auto, max-content) max-content max-content;
 		padding: 12px;
 	}

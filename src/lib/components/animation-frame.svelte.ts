@@ -1,20 +1,31 @@
-import { onMount } from 'svelte';
+import { untrack } from 'svelte';
 
-export function useAnimationFrame(onTick: () => void) {
-	let animationFrameRequest = $state<number>();
+type TickListener = () => void;
 
-	function tick() {
-		animationFrameRequest = requestAnimationFrame(tick);
-		onTick();
-	}
+export function useAnimationFrameConditional(condition: () => boolean, onTick: TickListener) {
+	const isConditionMet = $derived(condition());
 
-	onMount(() => {
-		tick();
+	// This effect only triggers when the RESULT of condition() toggles.
+	$effect(() => {
+		if (isConditionMet) {
+			return untrack(() => {
+				let isExitingLoop = false;
 
-		return () => {
-			if (animationFrameRequest !== undefined) {
-				cancelAnimationFrame(animationFrameRequest);
-			}
-		};
+				function tick() {
+					if (!isExitingLoop) {
+						requestAnimationFrame(tick);
+					}
+
+					onTick();
+				}
+
+				requestAnimationFrame(tick);
+				onTick();
+
+				return () => {
+					isExitingLoop = true;
+				};
+			});
+		}
 	});
 }

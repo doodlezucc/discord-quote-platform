@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { volume } from '$lib/client-state/variables.svelte';
-	import { useAnimationFrame } from '$lib/components/animation-frame.svelte';
+	import { useAnimationFrameConditional } from '$lib/components/animation-frame.svelte';
 	import Duration, { convertSecondsToDuration } from '$lib/components/Duration.svelte';
 	import IconButton from '$lib/components/IconButton.svelte';
 	import Slider from '$lib/components/Slider.svelte';
@@ -9,9 +9,10 @@
 
 	interface Props {
 		src: string;
+		onInteracted: () => void;
 	}
 
-	let { src }: Props = $props();
+	let { src, onInteracted }: Props = $props();
 
 	let inferCurrentTime = $state(false);
 	let startTime = $state<number>(0);
@@ -27,19 +28,26 @@
 		currentTime = audioCurrentTime;
 	});
 
+	$effect(() => {
+		if (!audioPaused) onInteracted();
+	});
+
 	function onPlaybackStart() {
 		startTime = audioCurrentTime;
 		startTimestamp = performance.now();
 		inferCurrentTime = true;
+		onInteracted();
 	}
 
-	useAnimationFrame(() => {
-		if (inferCurrentTime) {
+	useAnimationFrameConditional(
+		() => inferCurrentTime,
+		() => {
 			currentTime = startTime + (performance.now() - startTimestamp) / 1000;
 		}
-	});
+	);
 
 	function onKeyDown(ev: KeyboardEvent) {
+		onInteracted();
 		if (ev.key === 'ArrowLeft') {
 			ev.preventDefault();
 			audioCurrentTime = Math.max(audioCurrentTime - 5, 0);
@@ -70,7 +78,10 @@
 		value={currentTime}
 		max={audioDuration}
 		describeValue={convertSecondsToDuration}
-		onchange={(value) => (audioCurrentTime = value)}
+		onchange={(value) => {
+			audioCurrentTime = value;
+			onInteracted();
+		}}
 		background="dark"
 	/>
 
@@ -90,6 +101,7 @@
 	@use '$lib/style/scheme';
 
 	.audio {
+		align-self: center;
 		display: flex;
 		align-items: center;
 		background-color: scheme.color('shade-2');

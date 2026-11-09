@@ -4,6 +4,10 @@
 	}
 
 	export function convertSecondsToDuration(seconds: number) {
+		if (!Number.isFinite(seconds)) {
+			seconds = 0;
+		}
+
 		const ss = part(seconds % 60);
 
 		const minutesTotal = Math.floor(seconds / 60);

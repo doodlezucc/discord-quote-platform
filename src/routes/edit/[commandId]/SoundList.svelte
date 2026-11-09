@@ -21,13 +21,17 @@
 
 	let query = $state('');
 
-	let filteredSounds = $derived.by(() => {
-		const fuse = new Fuse(sounds, {
+	const fuseIndexForSounds = $derived(
+		new Fuse(sounds, {
 			keys: [{ name: 'name' }, { name: 'keywords' }],
-			threshold: 0.3,
-			ignoreLocation: true
-		});
-		const results = fuse.search(query);
+			threshold: 0.1,
+			ignoreLocation: true,
+			useTokenSearch: true
+		})
+	);
+
+	let filteredSounds = $derived.by(() => {
+		const results = fuseIndexForSounds.search(query);
 
 		return results.map((result) => result.item);
 	});
