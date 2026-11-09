@@ -44,6 +44,9 @@
 	@use '$lib/style/scheme';
 
 	[role='tooltip'] {
+		pointer-events: none;
+		user-select: none;
+
 		background-color: scheme.color('background');
 		border: none;
 		border-radius: 8px;
