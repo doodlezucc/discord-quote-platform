@@ -227,13 +227,12 @@
 		grid-template-rows: 1fr max-content;
 		gap: 12px;
 		padding: 12px;
-		padding-top: 0;
+		margin-top: -12px;
 		transition: 0.2s cubic-bezier(0.165, 0.84, 0.44, 1);
 
 		height: 200px;
 
 		&[inert] {
-			padding-top: 0;
 			padding-bottom: 0;
 			height: 0;
 		}
